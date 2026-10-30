@@ -1,0 +1,14 @@
+{
+  "_README": "Tuning overlay. Safe to edit on a show machine: it holds no secrets. Changes to picture and keys land on the NEXT consult with no restart. Changes to ROTATION or ROOM_ID need a restart - drop an empty file called restart.flag next to server.js and the app will restart itself as soon as that room is idle, never mid-consult.",
+  "_CANNOT_BE_SET_HERE": "DISPLAY_MODE, KEEP_TRANSCRIPTS and TRANSCRIPTS_CUTOFF are ignored in this file by design. Alcon promised surgeons nothing is recorded, and that promise must not be reversible by editing the file we describe as safe to edit.",
+
+  "CHROMA_SIMILARITY": 0.05,
+  "CHROMA_SMOOTHNESS": 0.025,
+  "CHROMA_SPILL": 0.06,
+  "BACKGROUND_COLOR": "#003595",
+
+  "KEY_START": "PageDown",
+  "KEY_END": "PageUp",
+  "KEY_SKIP": ".",
+  "KEY_DEBOUNCE_MS": 1500
+}

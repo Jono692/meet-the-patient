@@ -1,0 +1,90 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Background test</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  body { margin:0; background:#0b0f14; color:#e8edf2; font:14px -apple-system,system-ui,sans-serif; }
+  header { padding:12px 18px; border-bottom:1px solid #243040; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  button { background:#141a22; color:#e8edf2; border:1px solid #243040; border-radius:8px; padding:7px 12px; cursor:pointer; }
+  button.on { border-color:#4fb3ff; }
+  #wrap { position:relative; height:calc(100vh - 150px); }
+  video, canvas { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; }
+  video { z-index:0; }
+  canvas { z-index:1; }
+  body.raw canvas { display:none; }
+  #panel { padding:12px 18px; border-top:1px solid #243040; display:flex; gap:22px; flex-wrap:wrap; align-items:center; }
+  label { display:flex; flex-direction:column; gap:3px; font-size:12px; color:#8a97a6; }
+  input[type=range] { width:190px; }
+  b { color:#e8edf2; font-variant-numeric:tabular-nums; }
+  code { background:#141a22; padding:3px 7px; border-radius:6px; color:#4fb3ff; }
+</style>
+
+<header>
+  <button data-who="peter" class="on">Peter</button>
+  <button data-who="margaret">Margaret</button>
+  <button data-who="rami">Rami</button>
+  <span style="width:14px"></span>
+  <button id="toggle">Show raw green</button>
+  <span style="width:14px"></span>
+  <label style="flex-direction:row;align-items:center;gap:7px">Background
+    <input type="color" id="bg" value="#003595">
+  </label>
+  <span id="bgname" style="color:#8a97a6">Alcon blue #003595</span>
+</header>
+
+<div id="wrap">
+  <video id="v" src="peter.mp4" autoplay loop muted playsinline></video>
+  <canvas id="c"></canvas>
+</div>
+
+<div id="panel">
+  <label>Similarity — how much green counts as background <input type="range" id="sim" min="0.01" max="0.20" step="0.005" value="0.06"><b id="simv">0.06</b></label>
+  <label>Smoothness — edge softness <input type="range" id="smooth" min="0.005" max="0.15" step="0.005" value="0.03"><b id="smoothv">0.03</b></label>
+  <label>Spill — green off the shirt and hair <input type="range" id="spill" min="0.01" max="0.30" step="0.01" value="0.08"><b id="spillv">0.08</b></label>
+  <div>Settings to keep: <code id="out"></code></div>
+</div>
+
+<script src="chroma.js"></script>
+<script>
+  var v = document.getElementById('v'), c = document.getElementById('c'), k = null;
+  function boot() {
+    if (k) k.stop();
+    k = Chroma.startChroma(v, c, {
+      background: document.getElementById('bg').value,
+      similarity: +sim.value, smoothness: +smooth.value, spill: +spill.value
+    });
+    out();
+  }
+  function out() {
+    document.getElementById('out').textContent =
+      'CHROMA_SIMILARITY=' + sim.value + '  CHROMA_SMOOTHNESS=' + smooth.value + '  CHROMA_SPILL=' + spill.value;
+  }
+  ['sim','smooth','spill'].forEach(function (id) {
+    var el = document.getElementById(id);
+    el.oninput = function () {
+      document.getElementById(id + 'v').textContent = (+el.value).toFixed(2);
+      if (k) k.set({ similarity: +sim.value, smoothness: +smooth.value, spill: +spill.value });
+      out();
+    };
+  });
+  document.getElementById('bg').oninput = function (e) {
+    if (k) k.set({ background: e.target.value });
+    document.getElementById('bgname').textContent =
+      e.target.value.toLowerCase() === '#003595' ? 'Alcon blue #003595' : e.target.value;
+  };
+  document.querySelectorAll('[data-who]').forEach(function (b) {
+    b.onclick = function () {
+      document.querySelectorAll('[data-who]').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      v.src = b.dataset.who + '.mp4';
+      v.play();
+      // Each face sat under slightly different light, so re-sample the green.
+      v.addEventListener('loadeddata', function once() { v.removeEventListener('loadeddata', once); if (k) k.set({ resample: true }); });
+    };
+  });
+  document.getElementById('toggle').onclick = function () {
+    document.body.classList.toggle('raw');
+    this.textContent = document.body.classList.contains('raw') ? 'Show keyed' : 'Show raw green';
+  };
+  v.addEventListener('loadeddata', function once() { v.removeEventListener('loadeddata', once); boot(); });
+</script>

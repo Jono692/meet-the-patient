@@ -1,0 +1,20 @@
+node_modules
+.env
+.contexts.json
+public/app.js
+.agents
+
+# Stand secrets, USB only
+deploy/secrets.env
+deploy/*.log
+
+# Guardrail test output (contains transcripts)
+tools/redteam/results/
+
+# Consult data and machine-local state, not for the repo
+transcripts/
+events.jsonl
+.tavus-pals.json
+.brief-mirror.tmp
+frames_check.jpg
+.DS_Store

@@ -1,0 +1,24 @@
+{
+  "name": "meet-the-patient",
+  "version": "0.1.0",
+  "description": "Alcon RANZCO 2026 conversational patient prototype (WTS)",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild src/client.js --bundle --minify --outfile=public/app.js --target=es2020",
+    "start": "node server.js",
+    "dev": "npm run build && node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@anam-ai/js-sdk": "^4.27.1",
+    "@anthropic-ai/sdk": "^1.3.0",
+    "@daily-co/daily-js": "^0.94.0",
+    "@heygen/liveavatar-web-sdk": "^0.0.18",
+    "dotenv": "^17.4.2",
+    "esbuild": "^0.28.2",
+    "express": "^5.2.1"
+  },
+  "private": true
+}

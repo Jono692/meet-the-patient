@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Stand control</title>
+<style>
+  :root {
+    --blue:#003595; --ink:#0b0f16; --card:#141b27; --dim:#7384a0; --line:#243244;
+    --live:#1f9d55; --idle:#b7791f; --closed:#49566b; --bad:#c53030;
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; background:var(--ink); color:#fff; font:16px/1.4 -apple-system,"Helvetica Neue",Arial,sans-serif;
+         padding:calc(env(safe-area-inset-top) + 14px) 13px calc(env(safe-area-inset-bottom) + 18px);
+         -webkit-user-select:none; user-select:none; }
+  h1 { font-size:12px; letter-spacing:2.4px; text-transform:uppercase; color:var(--dim);
+       margin:0 0 14px; font-weight:700; }
+
+  /* PIN gate */
+  #gate { display:none; }
+  #gate.on { display:block; }
+  #gate p { color:var(--dim); font-size:14px; margin:0 0 12px; }
+  #pin { width:100%; font:28px/1 -apple-system,monospace; letter-spacing:10px; text-align:center;
+         padding:18px; border-radius:12px; border:1px solid var(--line); background:var(--card); color:#fff; }
+  #pinGo { width:100%; margin-top:11px; }
+
+  .room { border:1px solid var(--line); border-radius:15px; padding:15px; margin-bottom:14px; background:var(--card); }
+  .head { display:flex; align-items:center; gap:9px; margin-bottom:13px; }
+  .id { font-size:15px; font-weight:800; letter-spacing:0.3px; }
+  .pill { font-size:10px; letter-spacing:1.5px; text-transform:uppercase; font-weight:800;
+          padding:5px 10px; border-radius:999px; background:var(--closed); }
+  .pill.live { background:var(--live); } .pill.idle { background:var(--idle); }
+  .pill.offline { background:var(--bad); }
+  .clock { margin-left:auto; font-size:21px; font-weight:700; font-variant-numeric:tabular-nums; color:var(--dim); }
+  .clock.on { color:#fff; }
+
+  .who { font-size:12px; letter-spacing:1.4px; text-transform:uppercase; color:var(--dim); margin-bottom:7px; }
+  .picks { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-bottom:12px; }
+  .picks button { padding:13px 4px; font-size:14px; font-weight:700; background:#1b2433; color:var(--dim);
+                  border:1px solid transparent; }
+  .picks button.sel { background:var(--blue); color:#fff; border-color:#4a7fd4; }
+
+  .acts { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  button { font:inherit; border:0; border-radius:11px; color:#fff; background:#223049; padding:17px 10px;
+           font-weight:700; }
+  button:active { transform:translateY(1px); }
+  button:disabled { opacity:.3; }
+  .go { background:var(--live); } .stop { background:var(--bad); }
+  .minor { grid-column:1 / -1; display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:2px; }
+  .minor button { padding:11px; font-size:13px; font-weight:600; background:#161f2d; color:var(--dim); }
+
+  .err { margin-top:11px; font-size:13px; color:#ffb4b4; background:#2b1414; border-radius:9px;
+         padding:9px 11px; display:none; }
+  .err.on { display:block; }
+  footer { color:var(--dim); font-size:11px; text-align:center; margin-top:6px; }
+</style>
+</head>
+<body>
+
+<h1>Meet the Patient &middot; stand control</h1>
+
+<div id="gate">
+  <p>Enter the control PIN.</p>
+  <input id="pin" type="tel" inputmode="numeric" autocomplete="off" placeholder="····">
+  <button id="pinGo" class="go">Unlock</button>
+</div>
+
+<div id="rooms"></div>
+<footer id="foot"></footer>
+
+<script>
+var PIN_KEY = "mtp-control-pin";
+var pin = sessionStorage.getItem(PIN_KEY) || "";
+var rooms = [], els = {}, cfg = {};
+
+function headers() {
+  var h = { "Content-Type": "application/json" };
+  if (pin) h["x-control-pin"] = pin;
+  return h;
+}
+function fmt(ms) {
+  var s = Math.floor((ms || 0) / 1000);
+  return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+}
+function title(id) { return id ? id.charAt(0).toUpperCase() + id.slice(1) : "—"; }
+
+function send(r, command, persona) {
+  var e = els[r.base];
+  // This PC's slot is /api/room/command; the peer relay is /api/peer/command.
+  fetch(r.cmd, { method: "POST", headers: headers(),
+      body: JSON.stringify({ command: command, persona: persona || null }) })
+    .then(function (x) {
+      if (x.status === 401) return lock();
+      // A command that does not land has to say so. A silent 404 once made every
+      // tap on this page do nothing while the status kept updating happily.
+      if (!e) return;
+      if (x.ok) { e.cmdErr = ""; return; }
+      // Prefer the server's own words - it knows things like a PIN mismatch between rooms.
+      return x.json().then(function (b) {
+        e.cmdErr = (b && b.error) || "Command not delivered (" + x.status + ").";
+      }).catch(function () { e.cmdErr = "Command not delivered (" + x.status + ")."; });
+    })
+    .then(poll)
+    .catch(function () { if (e) e.cmdErr = "Command not delivered - no reply."; poll(); });
+}
+
+function card(r) {
+  var d = document.createElement("div");
+  d.className = "room";
+  d.innerHTML =
+    '<div class="head"><span class="id"></span><span class="pill"></span><span class="clock"></span></div>' +
+    '<div class="who">Next patient</div><div class="picks"></div>' +
+    '<div class="acts"><button class="go start">Start</button><button class="stop end">End</button>' +
+    '<div class="minor"><button class="skip">Skip</button><button class="shut"></button></div></div>' +
+    '<div class="err"></div>';
+  document.getElementById("rooms").appendChild(d);
+  var e = {
+    id: d.querySelector(".id"), pill: d.querySelector(".pill"), clock: d.querySelector(".clock"),
+    picks: d.querySelector(".picks"), start: d.querySelector(".start"), end: d.querySelector(".end"),
+    skip: d.querySelector(".skip"), shut: d.querySelector(".shut"), err: d.querySelector(".err"),
+    buttons: {}
+  };
+  e.id.textContent = r.label;
+  (cfg.rotation || []).forEach(function (id) {
+    var b = document.createElement("button");
+    b.textContent = title(id);
+    b.onclick = function () { send(r, "pick", id); };
+    e.picks.appendChild(b);
+    e.buttons[id] = b;
+  });
+  e.start.onclick = function () { send(r, "start"); };
+  e.end.onclick = function () { send(r, "end"); };
+  e.skip.onclick = function () { send(r, "skip"); };
+  e.shut.onclick = function () { send(r, e.shutState === "closed" ? "open" : "close"); };
+  return e;
+}
+
+function render(r, data) {
+  var e = els[r.base];
+  var off = !data || data.error === undefined && data.state === undefined;
+  if (off) {
+    e.pill.className = "pill offline"; e.pill.textContent = "offline";
+    e.clock.textContent = ""; e.clock.className = "clock";
+    [e.start, e.end, e.skip, e.shut].forEach(function (b) { b.disabled = true; });
+    Object.keys(e.buttons).forEach(function (k) { e.buttons[k].disabled = true; });
+    e.err.className = "err on"; e.err.textContent = "No reply from this room.";
+    return;
+  }
+  var live = data.state === "live", closed = data.state === "closed";
+  e.pill.className = "pill " + data.state;
+  e.pill.textContent = data.state;
+  e.clock.textContent = live ? fmt(data.elapsedMs) : "";
+  e.clock.className = "clock" + (live ? " on" : "");
+  e.start.disabled = live || closed;
+  e.end.disabled = !live;
+  e.skip.disabled = live;
+  e.shut.disabled = false;
+  e.shutState = data.state;
+  e.shut.textContent = closed ? "Reopen stand" : "Close stand";
+  Object.keys(e.buttons).forEach(function (k) {
+    e.buttons[k].disabled = live;
+    e.buttons[k].className = k === data.persona ? "sel" : "";
+  });
+  var msg = data.error || e.cmdErr || "";
+  e.err.className = "err" + (msg ? " on" : "");
+  e.err.textContent = msg;
+}
+
+function poll() {
+  rooms.forEach(function (r) {
+    fetch(r.base + "/room", { cache: "no-store", headers: headers() })
+      .then(function (x) { return x.ok ? x.json() : null; })
+      .then(function (d) { render(r, d); })
+      .catch(function () { render(r, null); });
+  });
+}
+
+function lock() {
+  sessionStorage.removeItem(PIN_KEY); pin = "";
+  document.getElementById("gate").className = "on";
+  document.getElementById("rooms").innerHTML = "";
+  document.getElementById("foot").textContent = "";
+}
+
+function boot() {
+  rooms = [{ base: "/api", cmd: "/api/room/command", label: "Room " + (cfg.roomId || "A") + " · this PC" }];
+  if (cfg.hasPeer) rooms.push({ base: "/api/peer", cmd: "/api/peer/command", label: "Other room" });
+  document.getElementById("rooms").innerHTML = "";
+  els = {};
+  rooms.forEach(function (r) { els[r.base] = card(r); });
+  document.getElementById("foot").textContent = cfg.hasPeer
+    ? "Both rooms · relayed through this PC"
+    : "This room only — set PEER_URL in .env";
+  poll();
+  setInterval(poll, 1000);
+}
+
+document.getElementById("pinGo").onclick = function () {
+  pin = document.getElementById("pin").value.trim();
+  sessionStorage.setItem(PIN_KEY, pin);
+  document.getElementById("gate").className = "";
+  boot();
+};
+document.getElementById("pin").addEventListener("keydown", function (e) {
+  if (e.key === "Enter") document.getElementById("pinGo").click();
+});
+
+fetch("/api/config").then(function (r) { return r.json(); }).then(function (c) {
+  cfg = c;
+  if (c.pinRequired && !pin) { document.getElementById("gate").className = "on"; return; }
+  boot();
+});
+</script>
+</body>
+</html>

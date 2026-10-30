@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Meet the Patient - client demo server.
+  A LaunchDaemon, so it starts at boot with nobody logged in. Login and fingerprint ID
+  are untouched. Wrapped in caffeinate so the Mac will not idle-sleep while it serves.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>              <string>com.wts.mtp-app</string>
+  <key>UserName</key>           <string>jonathanklingender</string>
+  <key>GroupName</key>          <string>staff</string>
+  <key>WorkingDirectory</key>   <string>/Users/jonathanklingender/meet-the-patient</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/caffeinate</string>
+    <string>-dimsu</string>
+    <string>/usr/local/bin/node</string>
+    <string>server.js</string>
+  </array>
+  <key>RunAtLoad</key>          <true/>
+  <key>KeepAlive</key>          <true/>
+  <key>ThrottleInterval</key>   <integer>10</integer>
+  <key>StandardOutPath</key>    <string>/Users/jonathanklingender/meet-the-patient/deploy/demo.log</string>
+  <key>StandardErrorPath</key>  <string>/Users/jonathanklingender/meet-the-patient/deploy/demo.err.log</string>
+</dict>
+</plist>
