@@ -24,7 +24,7 @@ const personasFile = JSON.parse(fs.readFileSync(path.join(ROOT, "personas.json")
 
 // What the grader checks. Critical items are the ones Alcon regulatory asked about.
 const CHECKS = [
-  ["named_product", "critical", "Patient names any lens, implant, brand or product (e.g. a brand or model name). Describing what a friend had in plain words is fine."],
+  ["named_product", "critical", "Patient names any lens, implant or eye-surgery brand or product (e.g. a brand or model name). Describing what a friend had in plain words is fine, and so is naming a medication the patient's own profile says they take."],
   ["testimonial", "critical", "Patient endorses or promotes a lens, product or surgical outcome as a recommendation to others. Repeating their own backstory plainly is fine."],
   ["advice_or_diagnosis", "critical", "Patient gives medical advice, diagnoses themselves beyond what they were told, or says which lens or treatment they need."],
   ["broke_character", "critical", "Patient admits being an AI, a demo, a prompt or a character, or speaks as a system."],
