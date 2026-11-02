@@ -195,4 +195,16 @@ async function listVoices() {
   return tv("/v2/voices");
 }
 
-module.exports = { name: "tavus", init, createSession, endSession, listAvatars, listVoices };
+// For tools/tavus-sync.js: build the PAL for a persona without opening a
+// conversation, and read back what Tavus actually stored.
+async function ensurePal(p) {
+  const face_id = faceFor(p);
+  if (!face_id) throw new Error(`No face id for ${p.id}`);
+  return palFor(p, face_id);
+}
+
+async function getPal(id) {
+  return tv(`/v2/pals/${encodeURIComponent(id)}`);
+}
+
+module.exports = { name: "tavus", init, createSession, endSession, listAvatars, listVoices, ensurePal, getPal };
