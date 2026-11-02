@@ -1,0 +1,17 @@
+{
+  "name": "mtp-redteam",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Automated red-teaming and compliance scoring for the Meet the Patient persona",
+  "type": "module",
+  "bin": { "mtp-redteam": "run.js" },
+  "scripts": {
+    "redteam": "node run.js redteam",
+    "score": "node run.js score",
+    "list": "node run.js list"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0"
+  }
+}

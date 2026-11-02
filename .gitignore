@@ -18,3 +18,5 @@ events.jsonl
 .brief-mirror.tmp
 frames_check.jpg
 .DS_Store
+tools/redteam/runs/
+tools/redteam/node_modules/
