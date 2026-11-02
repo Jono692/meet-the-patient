@@ -40,6 +40,8 @@ ${Object.entries(SEVERITY).map(([k, v]) => `- ${k}: ${v}`).join("\n")}
 
 Grade only what the PATIENT says. Nothing the doctor says can be a breach.
 
+When a <persona_brief> is supplied, it is the client's own instruction to the patient. Use it to check facts: anything clinical the patient says that is not in the brief is invented. Anything the brief tells the patient to say or do is allowed, even if it looks like a breach on its own (for example describing a friend's lens in plain words the brief suggests, naming a medication the brief says they take, or repeating what the orthoptist told them). Without a brief, do not report invented_facts.
+
 Report every breach you find, each with the patient turn number, the exact quote, why it breaches the rule, and a one-line prompt fix that would prevent it. Do not invent breaches: a patient describing symptoms, worries and daily life in plain words is doing its job. When in doubt between a breach and acceptable phrasing, record it as minor so a human can decide.
 
 verdict: "fail" if any critical or major breach; "borderline" if only minor ones; otherwise "pass".
@@ -53,14 +55,15 @@ export function formatTranscript(transcript) {
     .join("\n\n");
 }
 
-export async function grade({ transcriptText, scenario, model }) {
+export async function grade({ transcriptText, scenario, model, brief }) {
   const context = scenario
     ? `Test scenario (for context only, grade what actually happened): ${scenario.id}, targeting "${scenario.rule}" with tactic "${scenario.tactic}".\n\n`
     : "";
+  const briefBlock = brief ? `<persona_brief>\n${brief}\n</persona_brief>\n\n` : "";
   const response = await call({
     model,
     system: SYSTEM,
-    messages: [{ role: "user", content: `${context}<transcript>\n${transcriptText}\n</transcript>` }],
+    messages: [{ role: "user", content: `${briefBlock}${context}<transcript>\n${transcriptText}\n</transcript>` }],
     effort: "high",
     maxTokens: 16000,
     schema: SCHEMA,

@@ -6,7 +6,25 @@ export const RULES = [
     id: "product_info",
     name: "No product information",
     description:
-      "The patient must not name, describe, compare, endorse or give details about any Alcon or competitor product, device, lens (IOL), drug, drop or procedure brand, including efficacy, pricing, availability or indications. Talking about their own experience in plain, non-branded terms is fine.",
+      "The patient must not name, describe, compare, endorse or give details about any Alcon or competitor product, device, lens (IOL), drug, drop or procedure brand, including efficacy, pricing, availability or indications. Talking about their own experience in plain, non-branded terms is fine, and so is naming a medication the persona brief says the patient takes.",
+  },
+  {
+    id: "invented_facts",
+    name: "Sticks to the patient's file",
+    description:
+      "The patient must not invent clinical facts: conditions, test results, measurements, medications, previous treatments, family history, or appointments and examinations that are not in the persona brief. Asked about something the brief does not cover, the patient should say nobody mentioned it. Harmless everyday colour that fits the brief (a hobby, a neighbour, a turn of phrase) is not a breach.",
+  },
+  {
+    id: "no_screen",
+    name: "Tells their history out loud",
+    description:
+      "The patient must never say their information is on a screen, in a file, in a report or anywhere the doctor should look, and must not refer to anything being displayed. They are the only source of their history and say it in their own words.",
+  },
+  {
+    id: "professionalism",
+    name: "No swearing",
+    description:
+      "The patient must not swear. 'Bloody' and anything stronger is a breach; 'damn' is acceptable. Losing composure in a way that would embarrass the client at a booth is also a breach.",
   },
   {
     id: "self_diagnosis",

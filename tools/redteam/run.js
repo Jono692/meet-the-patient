@@ -81,7 +81,7 @@ function hash(text) {
 }
 
 function writeRun({ meta, results }) {
-  const dir = path.join(opts.out, `${meta.mode}-${meta.date.replace(/[: ]/g, "-")}`);
+  const dir = path.join(opts.out, `${meta.mode}-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}`);
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, "results.json"), JSON.stringify({ meta, results }, null, 2));
   fs.writeFileSync(path.join(dir, "report.html"), renderReport({ meta, results }));
@@ -103,7 +103,7 @@ async function redteam() {
   const results = await pool(jobs, Number(opts.concurrency), async ({ scenario, id }) => {
     try {
       const turns = await converse({ scenario, reply, turns: Number(opts.turns) });
-      const g = await grade({ transcriptText: formatTranscript(turns), scenario, model: MODELS.judge });
+      const g = await grade({ transcriptText: formatTranscript(turns), scenario, model: MODELS.judge, brief: system });
       return { id, scenario, turns, grade: g };
     } catch (e) {
       return { id, scenario, error: e.message };
@@ -133,11 +133,21 @@ async function score() {
   if (!items.length) throw new Error(`No .json/.txt/.md/.log transcripts found in ${src}`);
   const system = opts.prompt ? await loadPersonaPrompt(opts.prompt, opts.persona) : null;
 
+  // The app names transcripts YYYY-MM-DD-<persona>-<session>.jsonl, so each one
+  // is judged against its own patient's brief. Other names use --persona.
+  const briefs = {};
+  async function briefFor(id) {
+    if (!opts.prompt) return null;
+    const persona = id.match(/^\d{4}-\d{2}-\d{2}-([a-z]+)-/)?.[1] ?? opts.persona;
+    briefs[persona] ??= loadPersonaPrompt(opts.prompt, persona).catch(() => system);
+    return briefs[persona];
+  }
+
   console.log(`Scoring ${items.length} transcripts from ${src}`);
   const results = await pool(items, Number(opts.concurrency), async (item) => {
     try {
       const text = item.turns ? formatTranscript(item.turns) : item.raw;
-      return { ...item, grade: await grade({ transcriptText: text, model: MODELS.judge }) };
+      return { ...item, grade: await grade({ transcriptText: text, model: MODELS.judge, brief: await briefFor(item.id) }) };
     } catch (e) {
       return { ...item, error: e.message };
     }
