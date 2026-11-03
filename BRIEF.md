@@ -1947,3 +1947,33 @@ files itself); the tunnel route prints the script's hash for comparison against 
 
 Thirteen files now, all verified three ways again: the pin in the script, the file on disk, and
 what the tunnel serves.
+
+**3 Nov, last job — README.md and .env.example brought up to date.** The README still described
+the patient as a HeyGen LiveAvatar in FULL mode. That is where `/auto-mode-setup` got it from
+earlier tonight: it built its whole environment profile around LiveAvatar, named only
+`LIVEAVATAR_API_KEY` as the secret to protect and missed `TAVUS_API_KEY`, the one the show
+depends on. Fixing the README is the root cause, so it is done.
+
+Both files now say Tavus, with LiveAvatar and Anam marked as alternates behind the same
+interface, and both warn that **`AVATAR_PROVIDER` unset falls back to `liveavatar`** — which is
+not the show. Other stale things corrected while in there: `npm run dev` as the way to start it
+(it is `npm start`; the front end ships prebuilt), `AVATAR_*`/`VOICE_*` env vars that are
+LiveAvatar's (`TAVUS_FACE_*`), the cast listed as graeme/helen/priya (peter, margaret, rami),
+`.contexts.json` as the prompt cache (`.tavus-pals.json`, and the prompt is built here and
+pushed, not stored at Tavus), and the clinical file described as the patient saying "it's on
+your screen" — the opposite of the rule since 30 Oct, where they tell the surgeon out loud and
+never point at anything.
+
+Two things found while checking claims rather than copying them across:
+
+- **`SESSION_BUDGET` counts consults, not minutes.** `/api/session` refuses the next one past
+  the count. I had written "minutes" and the code says `spent++` per session.
+- **`PUSH_TO_TALK` and `LIVEAVATAR_SANDBOX` only exist in `providers/liveavatar.js`** and do
+  nothing on Tavus. Both were in the README as if they were live settings, and `PUSH_TO_TALK`
+  was in `.env.example` with no indication it is provider-specific.
+
+The README also now records the show configuration in one place (DISPLAY_MODE, KEEP_TRANSCRIPTS
+and the cutoff, ROOM_ID, ROTATION, SHOW_PERSONAS, CONTROL_PIN, PEER_URL, chroma) and the fact
+that DISPLAY_MODE and KEEP_TRANSCRIPTS cannot be overridden from `config.local.json`. No
+secrets in either file; `public/update/` deliberately untouched, since its files are pinned by
+SHA-256 in UPDATE-2.
