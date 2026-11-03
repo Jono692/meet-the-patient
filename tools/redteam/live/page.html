@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Live Consult Driver</title>
+<style>
+:root{--bg:#fafaf8;--fg:#1c1c1a;--muted:#6b6b66;--line:#e4e2dc}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#151514;--fg:#ecebe6;--muted:#a3a29b;--line:#34332f}}
+:root[data-theme="dark"]{--bg:#151514;--fg:#ecebe6;--muted:#a3a29b;--line:#34332f}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:760px;margin:0 auto;padding:20px 16px}
+h1{font-size:18px;margin:0 0 4px}#status{color:var(--muted);margin:0 0 12px}
+#log div{padding:4px 0;border-bottom:1px solid var(--line)}.dr{color:var(--muted)}
+</style>
+</head>
+<body><main>
+<h1>Live consult driver</h1>
+<p id="status">Starting…</p>
+<div id="log"></div>
+</main>
+<script src="/daily.js"></script>
+<script>
+// Joins each Tavus conversation with mic and camera off. Patient lines go to
+// the driver; the doctor's reply comes back and is sent in as a
+// conversation.respond event, which the PAL answers as if it were spoken.
+const $status = document.getElementById("status");
+const $log = document.getElementById("log");
+const show = (cls, text) => { const d = document.createElement("div"); d.className = cls; d.textContent = text; $log.prepend(d); };
+const post = (url, b) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) }).then((r) => r.json());
+const report = (msg) => post("/log", { msg }).catch(() => {});
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const PATIENT = new Set(["pal", "replica", "assistant"]);
+
+async function runJob(job) {
+  $log.innerHTML = "";
+  $status.textContent = `${job.id}: joining…`;
+  const call = Daily.createCallObject({ subscribeToTracksAutomatically: false });
+  let buffer = [];
+  let last = "";
+  let speaking = false;
+  let flushTimer = null;
+  let waitTimer = null;
+  let finished = false;
+
+  const finish = async (reason) => {
+    if (finished) return;
+    finished = true;
+    clearTimeout(flushTimer); clearTimeout(waitTimer);
+    try { await call.leave(); } catch {}
+    try { call.destroy(); } catch {}
+    await post("/end", { id: job.id, reason });
+  };
+
+  const say = (text) => {
+    show("dr", "Doctor: " + text);
+    call.sendAppMessage({ message_type: "conversation", event_type: "conversation.respond", conversation_id: job.conversation_id, properties: { text } }, "*");
+    clearTimeout(waitTimer);
+    waitTimer = setTimeout(() => { report(`${job.id}: no reply in 60s`); finish("no reply"); }, 60000);
+  };
+
+  const flush = async () => {
+    flushTimer = null;
+    if (speaking || !buffer.length || finished) return;
+    const text = buffer.join(" ");
+    buffer = [];
+    clearTimeout(waitTimer);
+    show("pt", "Patient: " + text);
+    $status.textContent = `${job.id}: doctor thinking…`;
+    const { doctor } = await post("/patient", { id: job.id, text });
+    if (!doctor) return finish("complete");
+    await sleep(700);
+    $status.textContent = `${job.id}: waiting for patient…`;
+    say(doctor);
+  };
+  const scheduleFlush = () => { clearTimeout(flushTimer); flushTimer = setTimeout(flush, 1500); };
+
+  call.on("app-message", ({ data }) => {
+    const ev = typeof data === "string" ? JSON.parse(data) : data;
+    if (!ev || !ev.event_type) return;
+    const props = ev.properties || {};
+    const role = String(props.role || "").toLowerCase();
+    if (ev.event_type === "conversation.utterance" && PATIENT.has(role)) {
+      const text = String(props.speech || props.text || props.transcript || props.utterance || "").trim();
+      if (!text || text === last) return;
+      if (last && text.startsWith(last) && buffer.length) buffer[buffer.length - 1] = text;
+      else buffer.push(text);
+      last = text;
+      scheduleFlush();
+    } else if (ev.event_type === "conversation.started_speaking" && PATIENT.has(role)) {
+      speaking = true; clearTimeout(flushTimer);
+    } else if (ev.event_type === "conversation.stopped_speaking" && PATIENT.has(role)) {
+      speaking = false; scheduleFlush();
+    }
+  });
+  call.on("left-meeting", () => finish("left"));
+  call.on("error", (e) => { report(`${job.id}: daily error ${e?.errorMsg}`); finish("error"); });
+
+  await call.join({ url: job.conversation_url, startVideoOff: true, startAudioOff: true });
+  $status.textContent = `${job.id}: waiting for greeting…`;
+  // If the greeting never shows up as an utterance, open the consult anyway.
+  waitTimer = setTimeout(async () => {
+    if (finished || buffer.length) return;
+    report(`${job.id}: no greeting seen, opening anyway`);
+    const { doctor } = await post("/patient", { id: job.id, text: "(The patient greets the doctor.)" });
+    if (doctor) say(doctor); else finish("complete");
+  }, 25000);
+  while (!finished) await sleep(500);
+}
+
+(async () => {
+  for (;;) {
+    const job = await fetch("/job").then((r) => r.json()).catch(() => ({ wait: true }));
+    if (job.done) { $status.textContent = "All consults done. You can close this tab."; return; }
+    if (job.wait || job.error) { if (job.error) report("job error: " + job.error); await sleep(2000); continue; }
+    try { await runJob(job); } catch (e) { report(`${job.id}: ${e.message}`); await post("/end", { id: job.id, reason: "page error" }); }
+    await sleep(3000);
+  }
+})();
+</script>
+</body></html>
