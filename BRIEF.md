@@ -1997,11 +1997,16 @@ email told Polly and Caleb to expect, and still 7 minutes a consult.
 
 **Two things worth knowing.**
 
-- **`SESSION_BUDGET` resets on restart.** `spent` is an in-memory counter, so the 40-consult cap
-  Jono quoted is per server run, not a running total. It was at 9 of 40 before this restart and
-  reads 2 of 40 now (my two checks). Nothing is broken, but the cap is softer than it sounds,
-  and three patients will use it faster than one. Making it survive a restart is a small change
-  if we want it.
+- **The consult cap is now 100, was 40.** Raised on Jono's instruction on 4 Nov, because three
+  patients and a testing week will go through it faster than one patient did. Note the 40 in
+  Jono's 29 Oct email to Polly and Caleb is now out of date if anyone quotes it back.
+  On where 40 came from: it is not in git, because it lives in `.env`. Claude Code first
+  attributed it to Jono on the strength of that email; he says he would not have picked a
+  number, and the email was drafted for him, so on the record that exists the 40 was Claude's.
+- **`SESSION_BUDGET` resets on restart.** `spent` is an in-memory counter, so the cap is per
+  server run, not a running total. It read 9 of 40 before this morning's restart. Polly's team
+  have therefore had more than one allowance of 40 available since 29 Oct. Not fixed — making
+  it survive a restart is a small change (write the count beside `events.jsonl`) if we want it.
 - **Margaret's framing is still off-centre** (Job 2, her face centre sits at about 62% across
   the frame). It matters on the rotated 55" screens, not in a laptop browser, so Polly should
   be fine — but she is seeing Margaret for the first time and may mention it.
