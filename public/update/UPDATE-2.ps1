@@ -34,6 +34,14 @@
         because its server.js fingerprint is now the old one. This script is the only
         one to run.
 
+    CLAUDE.md + deploy\CLAUDE-BRIEF-AUCKLAND.md   THE BRIEF FOR CLAUDE CODE ON THIS PC.
+        The CLAUDE.md on these machines came off the USB stick and is the Mac's: it says
+        Claude Code is on the Mac mini and tells it to run "npm start", which here would
+        start a second app fighting the running one for port 3000. Replaced with one
+        written for a show PC - do not restart mid-consult, Node is not on PATH, Edge not
+        Chrome, show-start.ps1 not deploy\start.ps1, and how to check the work. The
+        Auckland brief goes in beside it.
+
     tools\                                THREE CHECKS, for this PC.
         tavus-sync.js         push the prompt to Tavus and read it back
         tavus-delete-check.js prove a consult really is deleted, on this machine
@@ -69,17 +77,19 @@ $Tmp    = Join-Path $env:TEMP "mtp-update2-$Stamp"
 $Bust   = "$Stamp-$(Get-Random)"
 
 $Files = @(
-  @{ Name = "personas.json";   Url = "personas.json";          Dest = "personas.json";                Sha = "63A1DB04BF502A46D0A899D20C0D02CD2D5B9CE537DCBB80CDDF105A752BBCFA" },
-  @{ Name = "prompt.js";       Url = "prompt.js";              Dest = "providers\prompt.js";          Sha = "7AE305BF479B7960E606DA6BAAB2A52171DE322B67B55E80CB2D6393CCBD8DE7" },
-  @{ Name = "tavus provider";  Url = "tavus-provider.js";      Dest = "providers\tavus.js";           Sha = "744F40CFA0ADDA599DFCC719C5E3E5DF55556B9CBB6AF9AD4C466B366A84B651" },
-  @{ Name = "server.js";       Url = "server.js";              Dest = "server.js";                    Sha = "6AAD4243CE078D8166C4FD7EF69ACDECAC9C3E35EF7F33A26C375B61C139208C" },
-  @{ Name = "stand page";      Url = "app.js";                 Dest = "public\app.js";                Sha = "F2C256A2724651770BA48E386A62379AC6BAE743CB87717A43283548CF319D7C" },
-  @{ Name = "hold screen";     Url = "hold.mp4";               Dest = "public\idle\hold.mp4";         Sha = "1876E7594FD4A1374D286DFDF933D81C5912572160E2D97F90BA56DF439D4DBA" },
-  @{ Name = "control page";    Url = "control-index.txt";      Dest = "public\control\index.html";    Sha = "ED81B677C77CBEE6A314D3171887BFA345023239735DFC818743FE69EEA8B514" },
-  @{ Name = "Alcon logo";      Url = "alcon.png";              Dest = "public\control\alcon.png";     Sha = "ABA33D8E0900F0DC75D739FD3B205373413986F856D36AEF03897BEED93225D4" },
-  @{ Name = "tavus-sync";      Url = "tavus-sync.js";          Dest = "tools\tavus-sync.js";          Sha = "59DF611E9E93660C21980B4787098AC9FB33D7D5CB933A89466CA3D638E718DC" },
-  @{ Name = "delete-check";    Url = "tavus-delete-check.js";  Dest = "tools\tavus-delete-check.js";  Sha = "267FBA073066773A040278AF119BC51843FF3EF7B7BAC27E1BF59152D132D352" },
-  @{ Name = "tavus-purge";     Url = "tavus-purge.js";         Dest = "tools\tavus-purge.js";         Sha = "D4C320D75243E82BBFA58516967DFD42A7CA4646ED5AC1DC198690EFFF071A2B" }
+  @{ Name = "personas.json";   Url = "personas.json";             Dest = "personas.json";                    Sha = "63A1DB04BF502A46D0A899D20C0D02CD2D5B9CE537DCBB80CDDF105A752BBCFA" },
+  @{ Name = "prompt.js";       Url = "prompt.js";                 Dest = "providers\prompt.js";              Sha = "7AE305BF479B7960E606DA6BAAB2A52171DE322B67B55E80CB2D6393CCBD8DE7" },
+  @{ Name = "tavus provider";  Url = "tavus-provider.js";         Dest = "providers\tavus.js";               Sha = "744F40CFA0ADDA599DFCC719C5E3E5DF55556B9CBB6AF9AD4C466B366A84B651" },
+  @{ Name = "server.js";       Url = "server.js";                 Dest = "server.js";                        Sha = "6AAD4243CE078D8166C4FD7EF69ACDECAC9C3E35EF7F33A26C375B61C139208C" },
+  @{ Name = "stand page";      Url = "app.js";                    Dest = "public\app.js";                    Sha = "F2C256A2724651770BA48E386A62379AC6BAE743CB87717A43283548CF319D7C" },
+  @{ Name = "hold screen";     Url = "hold.mp4";                  Dest = "public\idle\hold.mp4";             Sha = "1876E7594FD4A1374D286DFDF933D81C5912572160E2D97F90BA56DF439D4DBA" },
+  @{ Name = "control page";    Url = "control-index.txt";         Dest = "public\control\index.html";        Sha = "ED81B677C77CBEE6A314D3171887BFA345023239735DFC818743FE69EEA8B514" },
+  @{ Name = "Alcon logo";      Url = "alcon.png";                 Dest = "public\control\alcon.png";         Sha = "ABA33D8E0900F0DC75D739FD3B205373413986F856D36AEF03897BEED93225D4" },
+  @{ Name = "tavus-sync";      Url = "tavus-sync.js";             Dest = "tools\tavus-sync.js";              Sha = "59DF611E9E93660C21980B4787098AC9FB33D7D5CB933A89466CA3D638E718DC" },
+  @{ Name = "delete-check";    Url = "tavus-delete-check.js";     Dest = "tools\tavus-delete-check.js";      Sha = "267FBA073066773A040278AF119BC51843FF3EF7B7BAC27E1BF59152D132D352" },
+  @{ Name = "tavus-purge";     Url = "tavus-purge.js";            Dest = "tools\tavus-purge.js";             Sha = "D4C320D75243E82BBFA58516967DFD42A7CA4646ED5AC1DC198690EFFF071A2B" },
+  @{ Name = "CLAUDE.md";       Url = "CLAUDE-MD-SHOW-PC.md";      Dest = "CLAUDE.md";                        Sha = "8E3B26E4AA68FD4F93667F5BEED055B8ABA287C0296D8DEF88312670D75153FA" },
+  @{ Name = "Auckland brief";  Url = "CLAUDE-BRIEF-AUCKLAND.md";  Dest = "deploy\CLAUDE-BRIEF-AUCKLAND.md";  Sha = "AE7EF73674574A0D92C211B659318EBF2A60B734EB0C8C09D86FFBCE3BCC2741" }
 )
 
 function Say  ($m) { Write-Host ("   " + $m) }

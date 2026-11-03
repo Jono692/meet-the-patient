@@ -1927,3 +1927,23 @@ three of the deleted ids spot-checked straight against the API all answer 400
 `deploy/tavus-purge-record-20261103-2206.txt`. All 71 were ours from testing; no surgeon had
 ever sat in front of any of them. From here the server deletes each consult as it ends, so the
 end-of-day `tavus-purge.js` should always print "Nothing on the account."
+
+**3 Nov, after that — the PC's own CLAUDE.md was the Mac's, and is now fixed.** The `CLAUDE.md`
+in the app folder on both show PCs came off the USB stick and is this repo's: it says Claude Code
+is on the Mac mini, points at the Cowork session, and tells it to run `npm start` — which on a
+show PC would start a second app fighting the running one for port 3000. Replaced with
+`deploy/CLAUDE-MD-SHOW-PC.md`, written for a show PC: never change anything mid-consult, never
+stop what you cannot prove you can start, Node is not on PATH, Edge not Chrome,
+`show-start.ps1` not `deploy/start.ps1`, use `restart.flag` rather than killing the process,
+and the four commands for checking the work. UPDATE-2 installs it as `CLAUDE.md` and drops the
+Auckland brief beside it at `deploy\CLAUDE-BRIEF-AUCKLAND.md`, so that machine's Claude has both
+without anyone remembering to copy them.
+
+The brief no longer quotes UPDATE-2's own fingerprint — it could not stay true, since the script
+now installs the brief. The T7 route needs no fingerprint at all (the script checks all thirteen
+files itself); the tunnel route prints the script's hash for comparison against `SHA256SUMS.txt`.
+
+    UPDATE-2.ps1  8852D4AF274AB5302607BFE04514D9CB4E159F5305CE88261A1AEF8C7098E1E9
+
+Thirteen files now, all verified three ways again: the pin in the script, the file on disk, and
+what the tunnel serves.

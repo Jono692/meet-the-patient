@@ -94,22 +94,39 @@ still returns the whole record. `hard=true` is always sent.
 **3. The hold screen.** The approved loop, which Jono signed off on 3 Nov. `app.js` now looks
 for one clip at `/idle/hold.mp4` instead of three per-patient ones, so both files go together.
 
+It also replaces this PC's `CLAUDE.md` and drops a copy of this brief at
+`deploy\CLAUDE-BRIEF-AUCKLAND.md`. The `CLAUDE.md` these machines came with is the Mac's — it
+says Claude Code is on the Mac mini and tells it to run `npm start`, which here would start a
+second app fighting the running one for port 3000.
+
 ### How to run it
 
-Over the tunnel, while the Mac is up — PowerShell as Administrator:
-
-```powershell
-$ErrorActionPreference="Stop";[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$f="$env:TEMP\UPDATE-2.ps1";iwr "https://demo.meetthepatient.com.au/update/UPDATE-2.ps1?v=$(Get-Random)" -OutFile $f -UseBasicParsing -Headers @{Accept="*/*"};if((Get-FileHash $f -Algorithm SHA256).Hash -ne "CB808A9A0DC4C324FD5BAD329E7EF693044AA3B50FE0E271A09BF1EDB5475F1E"){throw "UPDATE-2.ps1 does not match. Nothing has been run."};powershell -ExecutionPolicy Bypass -File $f
-```
-
-From the T7, with no internet — same script, local files:
+**From the T7, no internet needed — use this one.** The script checks every file against its
+own SHA-256 as it goes, so this route needs no fingerprint typed in by hand:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File "D:\MTP-SHOW-KIT\5 Update 2 - prompt, hard delete, hold screen\UPDATE-2.ps1" -FromFolder "D:\MTP-SHOW-KIT\5 Update 2 - prompt, hard delete, hold screen"
 ```
 
-Check the drive letter. Both routes install the same eleven files and check every one against
-its SHA-256 first; `SHA256SUMS.txt` sits beside them.
+Check the drive letter first. `SHA256SUMS.txt` and a `README.txt` sit beside the script.
+
+**Over the tunnel, while the Mac is up.** Same script, fetched instead of copied. Verify the
+script itself before running it, because nothing else has checked it yet: its SHA-256 is the
+`UPDATE-2.ps1` line of `SHA256SUMS.txt` in that T7 folder, and is also recorded in `BRIEF.md`.
+Do not take it from this file — a brief that quoted the fingerprint of the script that installs
+the brief could never be kept true.
+
+```powershell
+$ErrorActionPreference="Stop";[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$f="$env:TEMP\UPDATE-2.ps1";iwr "https://demo.meetthepatient.com.au/update/UPDATE-2.ps1?v=$(Get-Random)" -OutFile $f -UseBasicParsing -Headers @{Accept="*/*"};(Get-FileHash $f -Algorithm SHA256).Hash
+```
+
+That prints the fingerprint. If it matches, run it:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "$env:TEMP\UPDATE-2.ps1"
+```
+
+The `?v=` is not decoration: Cloudflare caches that folder for four hours, 404s included.
 
 ### What it does, in order
 

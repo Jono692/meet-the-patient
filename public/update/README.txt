@@ -24,6 +24,12 @@ WHAT IT CHANGES
   Control page + logo   Already on both show PCs. In here for a SPARE built from the USB
                         stick, which has neither.
 
+  CLAUDE.md + the       The brief for Claude Code ON A SHOW PC, and a copy of the Auckland
+  Auckland brief        brief beside it at deploy\CLAUDE-BRIEF-AUCKLAND.md. The CLAUDE.md
+                        these PCs came with is the Mac's: it says Claude Code is on the Mac
+                        mini and tells it to run "npm start", which here would start a second
+                        app fighting the running one for port 3000.
+
   tools\                tavus-sync.js         push the prompt to Tavus, read it back
                         tavus-delete-check.js prove a consult really is deleted, on this PC
                         tavus-purge.js        list what is left on the account; --delete clears it
@@ -32,14 +38,15 @@ HOW TO APPLY IT
 
   Over the tunnel, while the Mac is up - one line in PowerShell as Administrator:
 
-    $ErrorActionPreference="Stop";[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$f="$env:TEMP\UPDATE-2.ps1";iwr "https://demo.meetthepatient.com.au/update/UPDATE-2.ps1?v=$(Get-Random)" -OutFile $f -UseBasicParsing -Headers @{Accept="*/*"};if((Get-FileHash $f -Algorithm SHA256).Hash -ne "CB808A9A0DC4C324FD5BAD329E7EF693044AA3B50FE0E271A09BF1EDB5475F1E"){throw "UPDATE-2.ps1 does not match. Nothing has been run."};powershell -ExecutionPolicy Bypass -File $f
+    $ErrorActionPreference="Stop";[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$f="$env:TEMP\UPDATE-2.ps1";iwr "https://demo.meetthepatient.com.au/update/UPDATE-2.ps1?v=$(Get-Random)" -OutFile $f -UseBasicParsing -Headers @{Accept="*/*"};if((Get-FileHash $f -Algorithm SHA256).Hash -ne "8852D4AF274AB5302607BFE04514D9CB4E159F5305CE88261A1AEF8C7098E1E9"){throw "UPDATE-2.ps1 does not match. Nothing has been run."};powershell -ExecutionPolicy Bypass -File $f
 
   From this folder on the T7, with no internet - same script, local files:
 
     powershell -ExecutionPolicy Bypass -File "<this folder>\UPDATE-2.ps1" -FromFolder "<this folder>"
 
-  Either way the script finds and runs Node BEFORE it stops or changes anything, checks
-  every file's SHA-256 before touching the PC, waits for a gap between consults, backs the
+  The -FromFolder route needs no fingerprint typed in by hand: the script checks all
+  thirteen files against their own SHA-256 as it copies them. Either way it finds and runs
+  Node BEFORE it stops or changes anything, checks every file's SHA-256 before touching the PC, waits for a gap between consults, backs the
   old files up, installs, restarts the app, then proves the prompt reached Tavus and that a
   consult really is deleted.
 
