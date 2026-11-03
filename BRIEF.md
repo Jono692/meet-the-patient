@@ -1977,3 +1977,37 @@ and the cutoff, ROOM_ID, ROTATION, SHOW_PERSONAS, CONTROL_PIN, PEER_URL, chroma)
 that DISPLAY_MODE and KEEP_TRANSCRIPTS cannot be overridden from `config.local.json`. No
 secrets in either file; `public/update/` deliberately untouched, since its files are pinned by
 SHA-256 in UPDATE-2.
+
+**4 Nov — Margaret and Rami are live on the test link, at Polly's request.** Polly Strauss
+(TSA Events) emailed on the morning of 4 Nov: *"Are we able to see the other two patients and
+do some test runs with them?"* The link had been running Peter only since 29 Oct
+(`SHOW_PERSONAS=peter`). Now `SHOW_PERSONAS=peter,margaret,rami`, and
+https://demo.meetthepatient.com.au offers all three.
+
+Verified rather than assumed: all three appear on the public picker through the tunnel, and a
+consult was opened and ended for Margaret and for Rami through the real `/api/session` path —
+both connected, both hard deleted, and the Tavus account reads clean afterwards. All three
+personas are complete (clinical file, priorities, must-surface facts, behaviour note, opening
+line) and all three idle clips are in `public/idle/`.
+
+The restart also put **yesterday's code on the demo link**: every consult is now ended and hard
+deleted from Tavus as it finishes, logged to `events.jsonl`. The link is otherwise unchanged —
+still `DISPLAY_MODE=test` with the clinical file panel showing, which is what Jono's 29 Oct
+email told Polly and Caleb to expect, and still 7 minutes a consult.
+
+**Two things worth knowing.**
+
+- **`SESSION_BUDGET` resets on restart.** `spent` is an in-memory counter, so the 40-consult cap
+  Jono quoted is per server run, not a running total. It was at 9 of 40 before this restart and
+  reads 2 of 40 now (my two checks). Nothing is broken, but the cap is softer than it sounds,
+  and three patients will use it faster than one. Making it survive a restart is a small change
+  if we want it.
+- **Margaret's framing is still off-centre** (Job 2, her face centre sits at about 62% across
+  the frame). It matters on the rotated 55" screens, not in a laptop browser, so Polly should
+  be fine — but she is seeing Margaret for the first time and may mention it.
+
+Not done: no reply sent to Polly. She also asked whether Jono wants to get in earlier on
+Friday, which is his to answer.
+
+The Mac's `public/app.js` is still the old bundle, deliberately: the hold screen is not on the
+demo link, only on the show PCs' update.
