@@ -444,10 +444,22 @@ app.post("/api/transcript", (req, res) => {
 // conversation keeps billing. The front end has no API key, so it asks us.
 app.post("/api/session-end", async (req, res) => {
   if (!provider.endSession) return res.json({ ok: true, skipped: PROVIDER_NAME });
+  const id = req.body && req.body.conversation_id;
   try {
-    res.json(await provider.endSession(req.body && req.body.conversation_id));
+    const out = await provider.endSession(id);
+    // Logged either way: the record of a consult deleted is the thing Alcon may
+    // be asked for, and a consult NOT deleted is the thing we need to chase.
+    // out.deleted, not "not false": endSession answers without a deleted flag at
+    // all when there was no conversation id, and the log must not claim a
+    // deletion that never happened.
+    logEvent(out.deleted ? "session-deleted" : "session-not-deleted", {
+      conversation_id: id || null,
+      ...(out.error ? { error: out.error } : {}),
+    });
+    res.json(out);
   } catch (e) {
     console.error("  [session-end] " + e.message);
+    logEvent("session-not-deleted", { conversation_id: id || null, error: e.message });
     res.status(e.status || 500).json({ error: e.message });
   }
 });

@@ -20,3 +20,20 @@ frames_check.jpg
 .DS_Store
 tools/redteam/runs/
 tools/redteam/node_modules/
+
+# Footage: masters, renders and test recordings. Large and reproducible from the
+# source clip; media/hold/key.js is the keyer and IS tracked.
+media/**/*.mov
+media/**/*.mp4
+media/**/*.webm
+
+# The two big files in the publish folder, same reason public/app.js is ignored.
+public/update/app.js
+public/update/hold.mp4
+
+# Working screenshots from checking the hold screen and the emotion test.
+emotion_ab.jpg
+emotion_sadness_test.jpg
+hold_check.jpg
+hold_lineup.jpg
+

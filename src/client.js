@@ -173,7 +173,7 @@ function initRecorder() {
   rec.onstop = () => {
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob(chunks, { type: "video/webm" }));
-    a.download = `idle-${state.persona ? state.persona.id : "patient"}.webm`;
+    a.download = `idle-${state.persona ? state.persona.id : "patient"}-${state.emotion || "no-emotion"}.webm`;
     a.click();
     console.log("[record] saved " + a.download);
   };
@@ -210,12 +210,17 @@ function setStandState(next, extra) {
   reportRoom(extra);
 }
 
+// Between consults the stand shows one fixed hold clip, not the next patient (decided
+// 3 Nov 2026: a seated woman, Adobe Stock 207362531, licensed, keyed onto the stand blue
+// and framed to sit with the patients - see media/hold/). Pick, Skip and the rotation
+// still move exactly as before; they just no longer change what is on screen between
+// consults, and because the source never changes the loop does not restart on a pick.
+// If the file is missing the stand shows plain blue, which is meant: a visible fault.
+const HOLD_CLIP = "/idle/hold.mp4";
+
 function playIdle() {
-  const p = standPersona();
-  if (!p) return;
   const v = $("#idle");
-  const want = `/idle/${p.id}.mp4`;
-  if (!v.src.endsWith(want)) v.src = want;
+  if (!v.src.endsWith(HOLD_CLIP)) v.src = HOLD_CLIP;
   // Muted and inline, so autoplay is allowed without a gesture.
   v.play().catch(() => {});
 }
@@ -332,6 +337,19 @@ function initStand() {
   setStandState("idle");
 }
 
+// A facial emotion held for the whole consult, per patient (Tavus conversation.set_emotion).
+// Margaret's training footage has her smiling oddly and moving while she listens, and
+// "neutral" is meant to hold her still. Deliberately empty until Jono OKs the A/B test of
+// 3 Nov 2026, so nothing ships by accident. For the test, ?emotion=neutral or ?emotion=off
+// in the URL overrides this for every patient; the stand never passes ?emotion.
+const FACE_EMOTION = {};
+
+function emotionFor(p) {
+  const q = new URLSearchParams(location.search).get("emotion");
+  if (q === "off") return null;
+  return q || FACE_EMOTION[p.id] || null;
+}
+
 async function start(p) {
   state.persona = p;
   state.turns = 0;
@@ -380,7 +398,12 @@ async function start(p) {
   };
 
   try {
-    state.av = await adapter.start({ token: tokenRes.session_token, session: tokenRes, videoEl: $("#video"), micId, on });
+    state.emotion = emotionFor(p);
+    if (state.emotion) console.log("[emotion] holding " + state.emotion + " for " + p.id);
+    state.av = await adapter.start({ token: tokenRes.session_token, session: tokenRes, videoEl: $("#video"), micId, on, emotion: state.emotion });
+    // TEST mode only: a handle for driving a consult without a microphone, for example
+    // mtp.av.respond("...") to put words in the surgeon's mouth. Never exposed in LIVE.
+    if (config.displayMode === "test") window.mtp = state;
     startBackground();
     setTimeout(initRecorder, 1500);
     $("#btn-mute").textContent = "Mute";

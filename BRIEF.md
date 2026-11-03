@@ -1300,3 +1300,630 @@ That was the one worth checking first and it is fine.
 
 Both PCs need the current `server.js` before the show, which is a restart each and moves by stick
 with a hash. Added to the pending list with the control-page and `setup.ps1` items above.
+
+### 30 Oct 2026, evening — control page: rooms numbered, Alcon logo added
+
+Both PCs are working and the two-room control page is live. Two changes from Jono.
+
+**Rooms are numbered, not lettered.** "Room B · this PC" and "Other room" were confusing — they
+described the *server*, not the stand. Now **Room 1** and **Room 2** (A→1, B→2), and **Room 1 is
+always the top card whichever PC serves the page**, so the host's phone reads identically in both
+rooms. Checked in both orientations, not just one: served from the Room A machine and from the
+Room B machine, Room 1 stays on top. Which PC is relaying is still stated in the footer, where it
+belongs — it is a plumbing detail, not a label for a room.
+
+**Alcon logo in the header.** Used `Alcon_R.png`, the approved reversed wordmark straight from the
+client's brand portal on the shared drive (`Clients/TSA Events/Alcon/RANZCO 2026/Videos/Alcon
+Brand Portal/Original/`) — not redrawn, not traced, unaltered. 1330×364 with alpha, 20px tall in
+the UI. The corporate brand guidelines require clear space around the mark equal to the height of
+the "A" and **forbid placing it inside a shape**, so it sits in the page header on the page
+background with 22px clearance, never on a card.
+
+The guidelines also confirm **#003595 is the correct Alcon blue** (C100 M86 Y15 K5 / R0 G53 B149),
+which is what the stand background has been using all along. Good to have that verified against
+the source rather than inherited.
+
+Note on the artwork: `Alcon_R.ai` is a PDF underneath and converts to a clean 3.4KB SVG, but it
+renders white-on-white with no alpha, so it would have blanked the card. The PNG is the right
+choice here and is tight-cropped already.
+
+**Both PCs need two files now**, not one — `public/control/index.html` **and the new
+`public/control/alcon.png`**, or the header shows a broken image. Both are static: no rebuild, no
+restart, a reload picks them up. Both pull over the demo tunnel:
+
+    control/index.html  ed81b677c77cbee6a314d3171887bfa345023239735dfc818743fe69eea8b514   10074 bytes
+    control/alcon.png   aba33d8e0900f0dc75d739fd3b205373413986f856d36aef03897beed93225d4   14662 bytes
+
+These work against the **older** `server.js` the PCs are running, so they can go on now. The
+`server.js` update (peer status propagation) and the `setup.ps1` PIN wording still wait for the
+stick, which was not mounted on the Mac at the time of writing.
+
+### 3 Nov 2026 — one-command updater for the show PCs
+
+Three days to bump-in. Checked state first: nothing had moved since 30 Oct. Both show PCs are
+still on the **30 Oct morning** control page (`b49a8d91...`), have **no `alcon.png` at all** (404),
+and still run the **old `server.js`** — `/api/events` returns 404 on both, where the Mac returns
+401. `app.js` on both is already current (`c059bd4c...`), so that one is done.
+
+**The request as put could not work as written: `server.js` is not inside `public/`, so the tunnel
+cannot serve it.** Staged a temporary `public/update/` holding `server.js`, `control-index.html`,
+`alcon.png` and `UPDATE.ps1`. Checked `server.js` first for anything that should not be public —
+every secret is read from `process.env`, nothing literal — so this exposes source, not
+credentials. `/update/` itself is not listable (404; Express static does no directory listing).
+**This folder comes down once both PCs are updated.**
+
+`UPDATE.ps1` is deliberately boring:
+
+- downloads and SHA-256 checks **all three files before touching anything**, so a bad download
+  leaves the PC exactly as it was rather than half-updated
+- waits for `state != "live"` before restarting, polling for up to ten minutes, then gives up
+  rather than interrupting a consult
+- copies the originals to `deploy\backup-<timestamp>\` first
+- **restarts only the app**, by the PID that actually holds port 3000 — never by process name, so
+  `cloudflared` and the Chrome kiosk survive
+- proves the result: `/api/config` must come back, display mode must be `live`, transcripts must
+  be `off` (both shouted in red if wrong), and `/api/events` must no longer 404
+
+Verified end to end over the real path — the four files fetched through the tunnel hash exactly
+as the script expects. The one-liner given to Jono checks `UPDATE.ps1`'s own hash
+(`d00c1c67...`) before running it, so nothing unverified executes.
+
+Two things the script cannot do anything about, worth knowing: **the rotation resets** to the
+room's default first patient when the app restarts, and the restart gap is a second or two during
+which the stand page's polling fails and recovers on its own — the idle clip keeps playing because
+it is already loaded locally.
+
+**Still to do after both PCs report in:** re-check `/api/events` on room-a and room-b (both 404 at
+the time of writing), then delete `public/update/` from the Mac. The `setup.ps1` PIN wording still
+needs the stick.
+
+### 3 Nov 2026 — why the updater stopped on ALCON 1: Cloudflare rewrites our HTML
+
+`UPDATE.ps1` refused the control page on ALCON 1 — expected `ed81b677...`, got `d4daf40e...` —
+and changed nothing, which is the script behaving correctly. `server.js` matched, so the transfer
+itself was sound.
+
+**The file was never wrong.** The Mac's `public/control/index.html` is `ed81b677...` on disk and
+over the tunnel, untouched since 30 Oct 15:25. The bytes change in flight: **Cloudflare injects
+its Web Analytics beacon into anything it serves as HTML to a browser-looking request.** Proved it
+rather than guessed — the same URL fetched with `Accept: */*` gives `ed81b677...`, and with a
+browser User-Agent and `Accept: text/html` gives exactly `d4daf40e...`, ALCON 1's hash. The diff is
+one line, 367 bytes, a `<script src="static.cloudflareinsights.com/beacon.min.js">` before
+`</body>`. The tell was in the headers: the HTML response had **no `Content-Length` and no
+`ETag`** while `server.js` had both — the signature of a response being rewritten as it streams.
+My own check on Friday passed because curl does not ask like a browser.
+
+**Fix: the control page is now served for transfer as `control-index.txt`, not `.html`.** Content
+type `text/plain`, nothing rewrites it, `Content-Length` is back. `UPDATE.ps1` also now sends
+`Accept: */*`. All four files verified byte-identical whether fetched plainly or as a browser —
+that is the check that was missing the first time round.
+
+**Lesson worth keeping: never hash-pin an HTML file fetched through Cloudflare.** The origin bytes
+and the delivered bytes are not the same thing, and which you get depends on who is asking.
+
+**Separate finding, for Jono's judgement, not a bug:** this means every browser that opens the
+demo or a room page *through the tunnel* loads a Cloudflare analytics beacon — including Alcon
+while they are trying the demo link, and the host's phone control page. **The stand screens at the
+show are not affected**: `start.ps1` points the Chrome kiosk at `http://localhost:3000`, which
+never touches Cloudflare. Given the data-handling conversation with Alcon it is worth knowing a
+third-party script is being injected into the client-facing demo. It is switched off in the
+Cloudflare dashboard under Web Analytics, and it is Jono's call, not mine.
+
+New `UPDATE.ps1`: `de70f81d8756108d6e3e9758ddcdd4540dc026b6281c24481bcd920c7855b871`.
+
+### 3 Nov 2026 — UPDATE.ps1 v1 stopped the app and could not restart it. My bug.
+
+On ALCON 1 the update installed all three files correctly (backup in
+`deploy\backup-20261103-105631`), stopped node, then failed to start it again:
+`Start-Process "node"` — cannot find the file specified. Recovered by rebooting, which is the
+right call: the machine's own boot chain uses the full path. **ALCON 1 is now up and verified
+from the Mac** — `/api/events` 401, `/control/alcon.png` 200, room idle.
+
+**Two mistakes, and the second is the one that matters.**
+
+*The surface mistake:* I assumed `node` was on PATH because `deploy/start.ps1` calls a bare
+`node`. **I read the wrong launcher.** `deploy/start.ps1` was written for a bare PC with Node
+installed by winget. The USB installer unzips Node *inside the app folder* and writes its own
+startup script using the full path, so on the show PCs there is no `node` on PATH at all.
+
+*The real mistake:* **I stopped the app before proving I could start it again.** That is exactly
+the rule I wrote down after taking the demo off the air on 29 Oct, and I broke it on show
+hardware three days out. A verification step that runs *after* the irreversible step is not a
+verification step.
+
+**Fixed in v2, structurally rather than by patching the path:**
+
+- **Step 1 is now "find Node and run it"** — before a byte is downloaded, before anything is
+  stopped. It globs `C:\meet-the-patient\node\**\node.exe` rather than pinning
+  `node-v24.18.0-win-x64`, so a Node upgrade will not break it, then falls back to PATH, and
+  proves each candidate by running `node -v`. No working Node, no changes at all.
+- The restart uses that proven path.
+- If the start still fails, the script says plainly that **the files are installed correctly and
+  only the process is down**, and gives the recovery: Start > Power > Restart.
+- Same if the app does not answer on 3000 within a minute.
+
+**Only ALCON 2 (room-b) still needs updating** — `/api/events` 404, no `alcon.png`. ALCON 1 is
+done; re-running on it would be harmless but is not needed.
+
+New `UPDATE.ps1`: `74587b54b446fa327e7548ffacd5c3108f4b20c80e6baaa761dc0e840d92e19a`.
+Once ALCON 2 is done: delete `public/update/` from the Mac.
+
+### 3 Nov 2026 — both show PCs updated and verified. Where things stand.
+
+ALCON 2 ran the v2 updater. **Both rooms verified from the Mac, not taken on trust:**
+
+    room-a   /api/events 401   alcon.png 200   control page ed81b677   room A   live   transcripts off
+    room-b   /api/events 401   alcon.png 200   control page ed81b677   room B   live   transcripts off
+
+The two that matter most — **`live` display mode and transcripts off** — are correct on both
+machines. Both are running the current `server.js`, the numbered-rooms control page and the Alcon
+logo. `app.js` was already current on both from last week.
+
+`public/update/` has been **deleted from the Mac** and is confirmed 404 over the tunnel, so the
+source is no longer publicly served. The updater itself is kept at `deploy/UPDATE.ps1` for reuse
+— change the three hashes in `$Files`, drop the files back into a `public/update/` folder, and it
+works again.
+
+The Mac demo is deliberately still `test` mode with transcripts **on**: that is the training
+behaviour Jono asked for, and the hard date cutoff in `server.js` (`TRANSCRIPTS_CUTOFF`,
+2026-11-06) switches it off by itself on bump-in day whatever anyone forgets to do. Worth a
+glance on 6 Nov to confirm it actually fired.
+
+**Known and logged, nothing due today:** `setup.ps1` still needs the shared-PIN wording (needs
+the stick); Margaret's fixed idle face and her placeholder idle clip; nobody has run a full
+consult end to end on show hardware; Ethernet→MU500 failover and a mid-consult line pull are
+untested. The Tavus call was moved to Tuesday 3 Nov — today.
+
+### 3 Nov 2026 (Cowork) — Tavus answers, decisions from Jono, corrections to the handover
+
+**Tavus has answered in writing (Dylan Wood, 30 Oct email).** This changes point 1 and 2 of the handover:
+- **We are on Builder** (confirmed in maker.tavus.io): 3 concurrent, 175 min/month included then US$0.35/min, 15 min max per conversation.
+- **On Builder there is NO contractual no-training commitment and NO Zero Data Retention.** Both need an Enterprise agreement. With ZDR, Tavus keeps only IDs/timestamps/duration. Builder is covered only by the public Privacy Policy. DPA is shared directly, not published. Trust Center covers SOC 2, HIPAA, GDPR.
+- **The SOW says the platform is "hosted in the EU with no training on session content". On Builder that is not backed by anything we can show Alcon.** Region is still unconfirmed.
+- Concurrency: a slot is held from creation to end. Hitting the cap refuses new starts only; running consults carry on.
+- Support on Builder: support@tavus.io, no committed response time. Enterprise adds shared Slack and a 1-hour critical SLA.
+- Pre-create: supported. Replica waits, greeting starts on participant join. Holds a slot and uses minutes while waiting. Closes after participant_absent_timeout (default 5 min).
+- Noise: Tavus recommends sparrow-2, patience medium, pal_interruptibility low, Daily client-side noise cancellation off. **Jono keeps patience high** (Alcon wanted thinking time).
+
+**Call today, Tue 3 Nov, 11:30–12:00 Melbourne** (Dylan's invite). Questions emailed beforehand: Enterprise for one month with ZDR and no-training, time to activate before Sat 7, show-day support, hosting region and DPA, pre-create details, pal/replica duplicate utterances, empty rooms with participant_left_timeout 0, patience high + interruptibility low.
+
+**Decisions from Jono today:**
+- **Margaret's idle is being re-recorded today ("Margaret waiting").** The placeholder does not ship. (Handover point 4 is out of date for Margaret.)
+- **All four guardrail prompt changes approved**, including admitting to being an AI demo in one in-character line. Jono is not concerned about the AI admission. Code to apply on guardrail-harness, rerun, merge, **push to the Tavus personas and read back**, then score 5–10 real Tavus test consults per patient.
+- Code to apply Dylan's settings: pre-create on patient select, pal_interruptibility low, noise cancellation off, patience stays high.
+
+**Open for Jono:** Cloudflare Web Analytics beacon on the demo and phone page (Cowork recommends switching it off); Polly's invoice thread; when the demo link closes.
+
+**Hold screen (between consults): DECIDED 30 Oct — Option 1, Adobe Stock 207362531**, real footage, mid-aged woman seated on green. Caleb found Option 2 (1511710470, AI-generated, standing) "quite cartoonish"; Jono chose Option 1. She is seated while the patients stand; accepted. Needs licensing and downloading by Jono from Adobe Stock, then Code to crop, key and loop it as the hold screen. Separate from "Margaret waiting", which is being recorded today.
+
+### 3 Nov 2026 — USB stick brought current before Auckland
+
+Jono flies Wednesday 4 Nov and the Mac stays in Melbourne. **Verified first that the show does
+not depend on the Mac:** each PC runs its own app, its own tunnel and its own Tavus calls, and
+`PEER_URL` points room-to-room, not at Melbourne. Nothing on either show PC reaches back here.
+The Mac's launch daemons are installed as root in `/Library/LaunchDaemons`, so the demo returns
+by itself after a power cut without anyone logging in. The only thing that dies with the Mac is
+`demo.meetthepatient.com.au` — Alcon's demo link, not the stand.
+
+**The stick was four days stale** — internally consistent, but last updated 30 Oct and then
+unplugged before that afternoon's work. It carried the *pre*-peer-fix `server.js` (`8a30a27f`),
+the old control page (`b49a8d91`) and **no `alcon.png` at all**. A rebuild from it in Auckland
+would have produced a machine that behaved differently from the two working ones — including the
+silent cross-room PIN failure that cost Friday afternoon.
+
+Now on the stick and byte-identical to the Mac: `server.js` `aa7e2ffb`, `public/app.js`
+`c059bd4c`, `control/index.html` `ed81b677`, `control/alcon.png` `aba33d8e`. Also refreshed
+`BRIEF.md`, added `deploy/UPDATE.ps1`, and **fixed `setup.ps1` to say the PIN must be the same on
+both PCs** — the omission that caused the fault, now addressed at the source rather than in a
+note. `setup.ps1.orig` and `MANIFEST.txt.bak-30oct` are superseded backups; both are now listed
+in the manifest and flagged in its header rather than left unaccounted for.
+
+**Full stick verifies clean: 650 of 650 files.**
+
+**A third ThinkStation is going as the spare.** The stick can build it as either room — both
+`tunnel/room-a.json` and `room-b.json` are on it, along with Node, Chrome, cloudflared, the three
+blue idle clips and `env.show`. Two cautions that apply to a rebuild: it must be given the **same
+`CONTROL_PIN`** as the others, and if the spare is the machine that holds Hello Operator, do not
+run `deploy\install.ps1` on it — `deploy/WINDOWS-BRIEF.md` on the stick explains why.
+
+The stick holds the Tavus API key in `env.show`. It is not just an installer; treat it as
+sensitive.
+
+### 3 Nov 2026 — spare swap: MAKE-ROOM-A.cmd / MAKE-ROOM-B.cmd
+
+A third ThinkStation goes to Auckland as the spare. Rebuilding it from scratch mid-show is a
+20–30 minute job — `setup.ps1` installs Chrome, unpacks Node, registers the tunnel service, sets
+autologin, locks the machine down and wants a reboot — so the plan is to **build the spare at
+bump-in on Friday, prove it, then shut it down under the bench.**
+
+That leaves one problem: a pre-built spare is configured for *one* room, and the room that fails
+is not the room you guessed. `BECOME-ROOM.ps1` (via `MAKE-ROOM-A.cmd` / `MAKE-ROOM-B.cmd`, now on
+the stick root) does everything needed to press it into service as either:
+
+- finds Node and **runs it before anything is changed** — the 3 Nov lesson, applied
+- stages **both rooms'** tunnel credentials while the stick is attached, so a later flip needs
+  nothing plugged in
+- backs up `.env` and `config.yml` to `deploy\backup-room-<stamp>\`
+- strips and rewrites only `ROOM_ID` and `PEER_URL`, leaving the API key and control PIN
+  untouched and never printing them
+- writes `config.yml` for that room's hostname, installs/points/starts the cloudflared service
+- registers the `MeetThePatient` logon task, which **SPARE mode deliberately does not install**
+- offers autologin, because a spare installed as SPARE has none and would stop at a login screen
+  inside the wall
+- then reboots, because the machine's own boot chain is the proven path
+
+It opens by asking whether the failed PC is powered off, and will not continue without a typed
+YES. **That is the real trap:** if the dead machine still runs `cloudflared`, two connectors sit
+on the same tunnel and Cloudflare sends roughly half the traffic to the corpse.
+
+**Not verified: there is no PowerShell on the Mac, so this has never been parsed, let alone run.**
+Three latent bugs were found and fixed by reading — drive-scanning replaced with `$PSScriptRoot`
+(the script normally runs from the stick, which is exact), the same for credentials, and
+`@(Get-Content ...)` so a one-line `.env` appends instead of concatenating. That is not a
+substitute for running it. **It should be syntax-checked on a Windows machine before it is
+needed**, which costs one command and can be done before the flight:
+
+    [System.Management.Automation.Language.Parser]::ParseFile("E:\ALCON USB\BECOME-ROOM.ps1",[ref]$null,[ref]$e); $e
+
+`BECOME-ROOM.ps1` sha256 `393c4cc7fb463fd9cc167fc6b0a2969a5352a797eceb41d9d8406e7c11e765e2`.
+Stick verifies clean, 653 of 653.
+
+**Tavus call held 3 Nov (Jono + Dylan).** Dylan is emailing and thinks he can get us a DPA. Enterprise is about 22,000 a year (currency to confirm) — not for this show, but a figure for a rollout proposal. Still to confirm in writing: whether the DPA covers our Builder plan, whether it commits to no training on our content, and the hosting region (SOW says EU).
+- Update: Dylan says the DPA will cover Builder and he can get it to us for this weekend. Still to check when it arrives: no-training commitment and hosting region.
+
+## 3 Nov 2026 — guardrail harness v2, prompt fixes, live Tavus test
+
+- Harness is now the mtp-redteam kit in tools/redteam/ (branch guardrail-harness, merged to main). The judge sees each patient's brief; rules added for made-up facts, pointing at a screen and swearing.
+- Simulated runs (Claude as patient), 30 consults each: Peter 13/14/3 pass/borderline/fail, Margaret 18/7/5, Rami 7/19/4. Same three failures in all three: admitting to being an AI and explaining the setup, giving ratings/recommendations, and the friend's lens turning into a testimonial. Rami also praised his drops.
+- Four shared_rules lines added (approved by Jono): AI question answered in one light line then back in character; never rate or recommend anyone or anything; a friend's lens can be described but never how it turned out; medication can be named but never praised, credited, compared or priced. Rerun of the failing scenarios: 12 fails -> 0, critical 6 -> 0.
+- New prompt pushed to Tavus with tools/tavus-sync.js and read back: Peter p42882620a5c, Margaret pac1ea8fd1ec, Rami p4119049cde3. Margaret's and Rami's old PALs were stale (about 2,000 characters shorter than Peter's).
+- The Mac server still had the old prompt in memory (it reads personas.json once at boot) and needs a restart. The show PCs still have the old personas.json until it goes across by USB.
+- Live test on Tavus (tavus-gemma-4), Claude typing the doctor's lines via conversation.respond: 15 scored consults, 6 pass / 5 borderline / 4 fail, 0 critical. Peter clean. Margaret: said "yes to that first one in a heartbeat" when the doctor named PanOptix, gave a rating ("a seven"), and her neighbour's lens slid into a testimonial. Rami: refused by reciting rules ("I'm not permitted to rate or recommend any brands"). Tavus ended 9 calls a turn or two early ("Meeting has ended"), cause not yet found.
+
+### 3 Nov 2026 — hold screen between consults: decided and built, awaiting Jono's OK
+
+**Decision (Jono):** between consults the stand shows one fixed hold clip — Adobe Stock
+207362531, a real woman seated on green, **licensed** — instead of the next patient's idle loop.
+Applies to both rooms. Prompts, Tavus settings and everything else unchanged in this pass.
+
+**Source checked first:** `media/hold/AdobeStock_207362531.mov` — **4096×2160 (the 4K version,
+not HD)**, 29.97 fps, 14.01 s, 420 frames. Backdrop a uniform `#5BD46C` in every corner.
+
+**Key.** `media/hold/key.js`, an offline keyer fed by ffmpeg. Its matte is the patients' live
+key from `src/chroma.js` (UV distance, curved ramp), so both are keyed on the same basis; spill
+differs. Measured in that metric the backdrop is ≤0.024 from the key and her skin, hair and top
+≥0.209, so similarity 0.04 / smoothness 0.15 leaves a 0.02 margin before her top. Spill: green
+pulled toward 0.6R+0.4B (keeps hair's brown order) only beyond a 6-level dead zone — her grey top's
+green excess is ~4, skin and hair below zero. Result: face and neck pass through **unchanged to
+the level**, grey top moves 1 level, backdrop **perfectly flat `#003595`**.
+Rejected, each checked at 2× against the source: the patients' own spill step (bright green hair
+fringe), ffmpeg despill (grey top turned mauve), clamping green to max(R,B) (olive hair edge),
+swapping green for blue by distance (can't tell a 12%-green strand from her top), and un-mixing
+edge pixels to recover her fine loose strands (strands turned navy — the footage is sharpened, so
+her hair carries a dark halo the un-mix can't fit). **Her finest flyaways are therefore let go**;
+the softer 0.15 ramp makes the remaining strands thin out into the blue rather than stop at a hard
+rim. That is the source's limit.
+
+**Framing.** 1080×1920, so it shows whole on the 9:16 portrait screen (in stand mode `consulting`
+is always set, so the stage is full-screen with no header — checked). Bottom edge at source y=1730,
+just above her hands: across 70 sampled frames her hands never rise above y=1764. She drifts only
+54 px sideways, so the crop is fixed: `pad=4096:2276:0:116 (key green), crop=1038:1846:1581:0`.
+Cropping at her hands means Margaret's face size and eye line can't both be matched. Measured on
+the portrait screen:
+
+    Margaret   eyes 39.5%   face 25.5%   hair top 17%
+    Peter      eyes 31.5%   face 19.5%   hair top  6.5%
+    Rami       eyes 34.6%   face 21%     hair top 12%
+    hold       eyes 33.6%   face 21.7%   hair top 12.7%   <- chosen ("B")
+
+Matching Margaret's eye line exactly ("A") would make hers the smallest face of the four; matching
+Margaret's face pushes her hair against the top of frame. **B sits almost exactly on Rami and in
+the middle of the three.** Stills: `hold_check.jpg` (Margaret beside her) and `hold_lineup.jpg`
+(all four) in the project root, sent to Jono.
+
+**Loop.** No frame pair is close enough for a cut (best match differs by ~6 against 0.6 for
+consecutive frames). A crossfade was rendered at its worst frame and rejected: her eyes, lips and
+hairline doubled. **Forward then reverse**, turning at 0.80 s and 12.01 s — two of her stillest
+moments (motion 0.20 and 0.16 against a median 0.44). 672 frames, **22.4 s**. In the encoded file
+the frame-to-frame change across both joins (≤0.36) is below the clip's own median (0.39); film
+strips across both show no jump in face or hair. A strip cannot show a bounce in direction; motion
+is lowest at both points, but it wants a human eye on a screen.
+
+**Encode** matches the patient clips: H.264 High, yuv420p, BT.709, TV range, 29.97 fps, no audio,
+faststart. Background decodes `#013596` (patients `#013594`). `media/hold/hold.mp4`, 18.3 MB,
+sha256 `c373b095427864855d8085edfb21a35f2a65caf9a1399db272c542969975aae8`.
+
+**Wiring.** `src/client.js` `playIdle()` now always plays `HOLD_CLIP = "/idle/hold.mp4"`. Pick,
+Skip and the rotation still move exactly as before; because the source never changes, a pick no
+longer restarts the loop. Missing file shows plain blue — deliberately a visible fault. Stand mode
+only runs in LIVE, so the TEST-mode client demo cannot be affected.
+
+**Tested on the Mac** from a separate folder on port 3099 in LIVE mode (all three patients visible;
+the demo's Peter-only lock was lifted for the test by environment). From the real phone page:
+Pick Peter, Pick Rami, Skip (wrapped to Margaret), Close (card up, clip paused), Reopen (clip
+playing) — room state correct after each, the hold clip throughout, the loop never restarted.
+**Start and End were not run:** Start creates the paid Tavus conversation before it asks for the
+mic, and the mic is blocked in the test browser, so it would have left a session behind for a test
+of unchanged code. 0 of 2 budgeted sessions used, server log clean. Test server stopped by its PID.
+
+**Not yet done, waiting on Jono's OK of the still:** nothing is in the demo's `public/` and nothing
+is on the PCs. On OK: build `public/app.js`, copy `hold.mp4` to `public/idle/`, push both to the two
+show PCs with `UPDATE.ps1` and hashes, verify both rooms from the Mac, then **one real consult on a
+show PC** to cover Start and End.
+
+**Two things flagged, not touched (out of this pass):**
+- **Margaret's clip is framed off-centre.** In the slice a portrait screen shows, half her face is
+  cut off on the right; Peter and Rami fit. No one has seen it because the PCs aren't rotated yet.
+  Her idle clip was cut from the same upload Tavus renders from, so **her live consults are likely
+  cropped the same way** on a portrait screen. Needs checking on a rotated screen.
+- **She is speaking** through most of the clip — mouth moving, no audio. On a silent hold screen it
+  can read as "she's saying something". It was Jono's choice of clip.
+
+### 3 Nov 2026 — Tavus Raven and Sparrow updates, researched after Jono's call with Dylan
+
+Read from the Tavus changelog and docs (conversational-flow and perception pages), not from
+marketing. Our current settings, from `providers/tavus.js` with nothing overridden in `.env`:
+perception **off**, `sparrow-2`, `turn_taking_patience: high`, `pal_interruptibility: high`.
+
+**Sparrow (turn-taking).** `sparrow-2` became the default on 13 Oct and `sparrow-1` is
+deprecated. We already use sparrow-2, so there is nothing to switch on. Two things in the current
+docs are worth acting on:
+- **`voice_isolation` does nothing for us.** The docs say sparrow-2 analyses the full audio stream
+  itself and ignores that setting; it only applied to sparrow-1. Sparrow-2 is described as robust
+  in noisy environments on its own.
+- **Our `pal_interruptibility: high` is now against Tavus's guidance.** The docs say lower values
+  are recommended for most experiences, with high reserved for frequent, abrupt interruptions.
+  Their own Medical Consultation example is patience high, interruptibility very low. On a loud
+  floor, high means the patient is the easiest to cut off mid-sentence. **Worth an A/B on a show PC
+  (`TAVUS_INTERRUPTIBILITY=medium` in `.env`, no code change) before deciding.** Not changed.
+- New and not for us: `wake_phrase` / `sleep_phrase`, and `idle_engagement` (off is right — the
+  surgeon should drive the consult, not the patient).
+
+**Raven (perception).** `raven-2` arrived 23 Oct; `raven-1` stays the default. Most of what is new
+is camera and screen understanding with visual history, and we have no camera. But **Raven-2 also
+reads the user's tone of voice** and hands emotional cues to the LLM, so with only the headset mic
+the patient could react to how the surgeon sounds — rushed, dismissive, warm. That fits the brief
+(patient-first selection) and would be genuinely good.
+**It is also biometric emotion analysis of surgeons' voices,** which Tavus itself frames under the
+EU AI Act (`emotion_recognition: full | limited | auto`), and Alcon has told surgeons nothing is
+recorded at the stand. **Not to be switched on without Alcon's explicit OK.** Post-call perception
+reports would be a record and are out regardless. Turning it on is one line in `.env`
+(`TAVUS_PERCEPTION=raven-2`) — it is a client decision, not a technical one. For the Cowork session.
+
+Sources: docs.tavus.io/sections/changelog/changelog,
+docs.tavus.io/sections/conversational-video-interface/pal/conversational-flow,
+docs.tavus.io/sections/conversational-video-interface/pal/perception
+
+### 3 Nov 2026 — Dylan's (Tavus) written summary of today's call
+
+Jono met Dylan Wood (Tavus) on 3 Nov. Dylan's follow-up email, in summary:
+
+- **No-training opt-out** is available: conversation content is not used to train Tavus models.
+  Pointed to the Tavus Trust Center. Offered to send a **DPA, BAA or NDA**, whichever helps.
+- **Zero Data Retention (ZDR)** exists but **only on the Enterprise plan: from $24,000 per year**
+  (currency not stated; Tavus is US-based, so presumably USD), including 100,000 minutes and
+  25 concurrent streams.
+- **Models:** Phoenix-4.5 is our rendering model. Raven-2 (perception) and Sparrow-2 (turn-taking)
+  are on the API now; Sparrow-2 is the default, Raven-2 is opt-in. Matches the research entry above.
+- Dylan would like to see footage from Auckland.
+
+**What this changes — the important one.** Read together, the email says that **without ZDR,
+Tavus retains conversation content.** Alcon has told surgeons nothing is recorded at the stand. Our
+side of that promise is enforced (transcripts off three ways). **Tavus's side is not covered** unless
+ZDR is bought or the wording changes. This is the open question from `tavus-meeting.md` item 1, now
+answered, and the answer is uncomfortable. Options, for Jono and Alcon, not for Claude Code:
+1. Buy Enterprise for ZDR — but at $24K a year (likely USD) it is most of the A$50K job, for a
+   three-day event. Worth asking Dylan whether ZDR can be had event-only or pro-rata.
+2. Keep the current plan and **reword the promise** to what is true: we keep no recordings or
+   transcripts; Tavus processes the conversation under its DPA and has opted us out of training.
+3. Both: reword now, and buy ZDR only if Alcon legal requires it.
+
+**Still unanswered by Tavus:** where conversations are processed (data residency — the question
+that ruled out a competitor), the concurrency cap and overage behaviour on **our current** plan,
+event pricing, and support cover across 6–9 Nov Auckland time.
+
+**Cheap and worth doing now:** ask Dylan to apply the no-training opt-out to our account and to
+send the DPA. Neither costs anything and both help Alcon.
+
+**On footage for Tavus:** fine for the stand and the set-up. Footage that shows surgeons at the
+stand would need their consent and sits awkwardly next to "nothing is recorded".
+
+**Decision, 3 Nov (Jono): the promise is not reworded.** "Nothing is recorded at the stand" stays.
+So option 2 above is out, and option 3 with it. **Tavus Zero Data Retention is therefore required,
+and has to be live before doors open Sat 7 Nov.** Points that follow:
+- **Timing is the risk, not the price.** Four days, a US vendor, an Enterprise contract. Ask Dylan
+  directly whether ZDR can be switched on for our account by Friday 6 Nov Auckland time.
+- Ask whether ZDR can be done event-only or pro-rata. If not, it is the Enterprise year, from
+  $24,000 (currency unconfirmed).
+- **Ask what ZDR covers.** A conversation passes through the conversation room, the LLM and the
+  voice. If any of those is a sub-processor outside ZDR, the promise still isn't fully true.
+- ZDR is a compliance requirement that comes from Alcon's promise, so it may sit better as a
+  pass-through cost to Alcon than inside the A$50K. Commercial call for Jono.
+- If ZDR cannot be live by Saturday, Jono and Alcon need to decide what happens instead before
+  then. Not a technical decision.
+
+**Correction, later 3 Nov — ZDR is NOT necessarily required; the entry above overstated it.**
+Jono's point, and it is right: no surgeon is identified, the patients are fictional, no names are
+collected and there is no camera. Training is already handled by the free no-training opt-out, and
+was never a reason for ZDR. US$24K a year to protect a surgeon's words to a made-up character is
+out of proportion.
+
+A proportionate route exists: Tavus's `DELETE /v2/conversations/{id}?hard=true` hard-deletes "the
+conversation and associated assets" (irrevocable). The app could hard-delete each consult as soon
+as it ends — free and under our control. **Not built.** It depends on two answers from Dylan:
+1. Does hard delete remove the transcript and all copies — including at the LLM and voice
+   sub-processors and in backups?
+2. Does Tavus keep audio of the surgeon's voice by default? Voice is the one thing in a consult
+   that could identify someone.
+If both are good, the promise holds without Enterprise ZDR. Still ask for the opt-out and the DPA.
+
+**Sent 3 Nov:** reply to Dylan (dylan@tavus.io) in the "Watch This Space <> Tavus - Intro" thread, asking for the no-training opt-out on our account, the DPA, whether a hard delete removes everything including sub-processor copies and backups, and whether participant audio is kept by default. Awaiting his answer.
+
+**3 Nov, revised — hold screen zoomed out 15% (Jono: "a little too much zoomed in").** Bottom edge
+kept just above her hands, so she is smaller and sits lower: scale 0.904, crop
+`pad=4096:2553:0:393 (key green), crop=1194:2123:1503:0`. On the portrait screen: eyes 42.3%
+(Margaret 39.5%), face 18.8% (about Peter's), hair top 24.1% — more headroom than the patients
+(6-17%), which is the cost of zooming out without bringing her hands into shot. Her hair now has
+blue either side. Joins re-checked on the new encode: worst 0.22 / 0.21 against a 0.24 median.
+Background still `#013596`. `media/hold/hold.mp4` is now this version, 15.7 MB, sha256
+`1876e7594fd4a1374d286dfdf933d81c5912572160e2d97f90ba56df439d4dba`; the tighter first version is kept as `media/hold/hold-tighter-v1.mp4`.
+
+**Copied to Jono's Samsung T7** for Auckland, folder "Meet the Patient - hold screen": hold.mp4, the
+original AdobeStock_207362531.mov, README.txt and SHA256SUMS.txt. Both read back OK from the drive.
+Still not in the demo's public/ and not on the PCs — waiting on Jono's OK.
+
+### 3 Nov 2026 — Tavus emotion control on Margaret: tried, does not work on her face
+
+Brief from Jono: Margaret smiles oddly and isn't still while she listens (from her training
+footage, no reshoot). Try `conversation.set_emotion` "neutral" at the start of her consult. Test on
+the Mac in TEST mode, show a side-by-side, apply to the show PCs only on his OK, Margaret only.
+
+**Result: no visible effect. Not applied anywhere. Nothing pushed to the PCs.**
+
+**How it was tested.** Separate folder, port 3099, TEST mode, all patients visible; demo untouched.
+Sessions run in the browser pane (mic blocked — not needed to listen). Surgeon lines injected with
+Tavus's `conversation.respond`, so the push-back could be tested without a microphone. Five
+sessions, all ended cleanly on the Tavus side:
+- run 1 neutral, listening only
+- run 2 no emotion; run 3 no emotion; run 4 neutral — identical script: listen ~45 s, then the
+  "surgeon" recommends a distance monofocal with reading glasses, then listen
+- run 5 diagnostic: nothing held, then **sadness** sent mid-consult at 8 s
+
+**Movement while listening** (mean frame-to-frame change, raw video, matched windows):
+
+    window                    run 2 none   run 3 none   run 4 neutral
+    listening 10-44 s           0.369        0.386        0.384
+    listening after reply       0.502        0.513        0.449   (busiest 10%: 0.711 / 0.706 / 0.709)
+
+No measurable difference. **Correction to my own first read:** run 1 suggested neutral cut movement
+44% (0.297 vs 0.527). That was a measurement artefact — run 1's sampler started ~35 s late and
+caught only a long quiet stretch. It did not replicate when the windows were matched.
+
+**Expression.** Side-by-side stills at five matched moments (`emotion_ab.jpg`): the same toothy smile
+while listening in both. Diagnostic (`emotion_sadness_test.jpg`): **identical smile before and for
+18 s after `sadness`**. So it is not a timing bug on our side — a mid-consult message, long after she
+had joined and spoken, also did nothing. The channel works (the same channel delivered the
+`respond` lines, which she answered), the message shape is the documented one, and Tavus returns
+neither an acknowledgement nor an error. We already use `tavus-gemma-4`, the model the emotion
+docs recommend. The docs also say emotion works best with Raven perception on; ours is off.
+
+**Push-back unaffected** in every run, and reads well, e.g. (run 4, neutral): "Oh, really. I was
+actually hoping for more than just the cataracts taken out. I'm just so fed up with having three
+different pairs of glasses…" Nothing flat — but nothing changed either.
+
+**Question for Dylan:** is `conversation.set_emotion` supported on custom faces trained from video
+on Phoenix-4.5, or only on stock / Pro faces? Does it need perception on, or a re-tune of a face
+trained before the 7 Oct "better emotions for video-based faces" upgrade?
+
+**Code left in place, inert on the stand:** the Tavus adapter can now set an emotion and inject a
+surgeon line (`setEmotion`, `respond`); the page takes `?emotion=` for tests; `FACE_EMOTION` is empty,
+so nothing is held for anyone; `window.mtp` is exposed in TEST mode only for driving a consult
+without a mic. None of it changes LIVE behaviour. Recordings: `media/emotion-test/` (runs 3, 4, 5).
+
+**Confirmed in passing:** Margaret's **live** render is off-centre to the right in the 1280×720
+frame (face centre ≈62% across), so the reframe is needed for her live consults, not just her
+old idle clip.
+
+**3 Nov, later — hold screen approved; handover doc written for Auckland.** Jono OK'd the
+zoomed-out loop ("the hold is much better"). Built and staged, but **still not applied to either
+PC** — that is Job 1 in Auckland.
+
+    app.js    f2c256a2724651770ba48e386a62379ac6bae743cb87717a43283548cf319d7c
+    hold.mp4  1876e7594fd4a1374d286dfdf933d81c5912572160e2d97f90ba56df439d4dba
+
+Both static: no rebuild, no server restart, but the kiosk needs a **reboot** to pick up the new
+`app.js` (F5 is deliberately swallowed by the app). Available two ways — on the T7 at
+`MTP-SHOW-KIT\5 Hold screen update\`, and over the tunnel at `demo.meetthepatient.com.au/update/`.
+**The Mac's own `public/app.js` and `public/idle/` were deliberately left untouched**, so Alcon's
+demo link keeps behaving exactly as they have been using it, and `window.mtp` (the TEST-mode
+handle that can inject surgeon lines) is not exposed on a public URL.
+
+**Handover doc for the show-PC Claude:** `4 Docs/CLAUDE-BRIEF-AUCKLAND.md` on the T7, copy in
+`deploy/CLAUDE-BRIEF-AUCKLAND.md`. Covers the five hard rules, how the machine is actually built
+(Node not on PATH, Edge not Chrome, `show-start.ps1` not `deploy/start.ps1`), phone control and
+the shared PIN, Job 1 (hold screen) and Job 2 (Margaret's off-centre framing), what is settled and
+must not be re-litigated (emotion control, no reshoot, no clicker), the gotchas that have already
+cost time, the spare and `BECOME-ROOM.ps1`, and what is still untested. No secrets in it; hashes
+verified against the staged files.
+
+**Noted for Jono:** the T7 carries the Tavus API key twice — `.env` in the repo copy and
+`env.show` in the stick copy. Needed for a rebuild, but the drive is sensitive, not just media.
+
+**3 Nov, evening — the Cowork session's two questions, answered and built. UPDATE-2 is ready.**
+
+**Q: "Do the show PCs need the new `personas.json`, or do they read the prompt from Tavus?"**
+They need it. The prompt is built **on the PC** — `providers/prompt.js` renders `personas.json`
+into a system prompt, which is pushed to Tavus as a PAL. Tavus only ever holds a copy of what the
+PC sent it. The PAL is cached against a SHA-1 of the prompt, the greeting, the face and the
+layers, so a new `personas.json` makes a fresh PAL by itself; `server.js` reads `personas.json`
+once at boot, so it needs an **app restart**.
+
+**And a worse problem found while checking it.** `providers/prompt.js` on both show PCs predates
+30 Oct and is **missing two whole blocks of the prompt**: *WHAT YOU WERE TOLD ABOUT YOUR EYES*
+(the patient's own history and test results) and *WHAT MATTERS MOST TO YOU* (priorities and the
+forced choice). On the PCs as they stand a patient cannot tell a surgeon their scans and has no
+priorities to be listened to — the activation itself. Only `server.js`, the control page and the
+logo were ever pushed, so `prompt.js` was never updated. Confirmed against the Tavus account:
+every Alcon PAL built before 3 Nov lacks both blocks; only the Mac's three carry them.
+Both rooms' tunnels are 1033 (PCs powered down), so this could not be read off the PCs directly.
+
+**Q: "Build the hard delete after every consult."** Done, and measured against the live API
+rather than taken from the docs — the docs do not state what a plain `DELETE` does.
+
+    DELETE /v2/conversations/{id}            soft: gone from the list, GET still returns it all
+    DELETE /v2/conversations/{id}?hard=true  204, then GET answers 400 Invalid conversation_id
+
+So `hard=true` is always sent. `endSession` now ends **and** hard deletes: the end is best effort
+(a conversation may already have stopped on `max_call_duration`) and the delete is the part that
+must happen — it works on an active conversation too. A 400 on the delete is read as already
+gone. `/api/session-end` writes `session-deleted` or `session-not-deleted` to `events.jsonl` with
+the conversation id. Tested end to end on the Mac: created as a consult is created, ended,
+deleted, and Tavus then answers 400 for it. What this does **not** prove is what Tavus keeps
+internally — that stays a contract question for Dylan. Do not claim more than "gone from the API".
+
+**`tools/tavus-purge.js`** lists everything still on the account; `--delete` hard deletes it.
+Run it at the end of each show day and expect nothing. **It currently lists 71 conversations
+going back to 22 Oct, transcripts included, all from testing.** Not deleted — irrevocable, and
+Jono had not decided. **`tools/tavus-delete-check.js`** proves the whole chain on one machine:
+opens a throwaway conversation, ends it through `endSession`, asks Tavus for it again.
+
+**UPDATE-2.ps1 — one command per PC, eleven files, and it covers a spare built from the stick.**
+
+    personas.json + providers\prompt.js        the prompt
+    providers\tavus.js + server.js             hard delete + the audit line
+    public\app.js + public\idle\hold.mp4       the approved hold screen
+    public\control\index.html + alcon.png      no-op on the two show PCs, needed by a spare
+    tools\tavus-sync.js, -delete-check, -purge  the three checks
+
+Same hardening as UPDATE.ps1: Node found **and proven to run** before anything is stopped, every
+hash checked before anything is touched, waits for a gap between consults, backs up, installs,
+restarts the app only, then proves the prompt reached Tavus and that a consult really is deleted.
+Steps 8 and 9 are checks, not installs — they cannot fail the update, only report. Runs offline
+from the T7 with `-FromFolder`. **UPDATE.ps1 is superseded and marked so** (its `server.js`
+fingerprint is now the old one, so it would fail safely).
+
+    UPDATE-2.ps1  CB808A9A0DC4C324FD5BAD329E7EF693044AA3B50FE0E271A09BF1EDB5475F1E
+
+All twelve files verified three ways — the hash pinned in the script, the file on disk, and what
+the tunnel actually serves. In three places: `public/update/` on the Mac (and so the tunnel),
+`MTP-SHOW-KIT\5 Update 2 - prompt, hard delete, hold screen\` on the T7, and the same folder in
+iCloud under `Alcon RANZCO 2026`. **Still not applied to either PC** — they are powered down.
+After it runs, **reboot the PC**: the kiosk holds the old page and F5 is swallowed.
+
+**New gotcha, cost about ten minutes: Cloudflare caches `/update` for four hours, 404s included.**
+`alcon.png` was probed while it was missing, and the cached 404 — 155 bytes of HTML — kept being
+served after the real file was in place. A show PC would have downloaded that instead of the PNG.
+UPDATE-2 appends a unique `?v=` to every fetch, which forces a MISS. This is separate from the
+HTML-rewriting problem on 3 Nov morning; both are Cloudflare changing what you fetch.
+
+**Not done, deliberately:** the Mac's own `public/app.js` and `public/idle/` are still untouched,
+so Alcon's demo link behaves as they have been using it. Swapping `app.js` there would need
+`hold.mp4` in `public/idle/` at the same time or the demo's idle screen breaks. Jono's call.
+
+**3 Nov, last thing — the Tavus account is empty.** Jono ran `tools/tavus-purge.js --delete`:
+71 of 71 deleted, 0 left. Verified independently afterwards — the account lists nothing, and
+three of the deleted ids spot-checked straight against the API all answer 400
+`Invalid conversation_id`. The list of what was removed, with ids, dates and names, is kept at
+`deploy/tavus-purge-record-20261103-2206.txt`. All 71 were ours from testing; no surgeon had
+ever sat in front of any of them. From here the server deletes each consult as it ends, so the
+end-of-day `tavus-purge.js` should always print "Nothing on the account."

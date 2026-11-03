@@ -174,11 +174,74 @@ async function createSession(p, opts = {}) {
 
 // Leaving the Daily room is not the same as ending the conversation. Called
 // from /api/session-end so a closed tab cannot leave one running.
+//
+// Every consult is ended AND hard deleted. Alcon's position is that nothing a
+// surgeon says should sit on a vendor's servers after they walk away, so the
+// conversation does not outlive the consult.
+//
+// Two things about their API, both measured against the live one on 3 Nov, not
+// taken from the docs:
+//
+//   - hard=true is not optional. A plain DELETE is a SOFT delete: the
+//     conversation vanishes from GET /v2/conversations, and a GET on its id
+//     still returns the whole record. A delete that looks like it worked and
+//     removed nothing is the worst of both, so the flag is always sent.
+//   - DELETE works on an active conversation as well as an ended one, and
+//     answers 204 either way. So the delete is the part that must happen and
+//     the end is best effort: if /end fails - the conversation may already have
+//     stopped on max_call_duration - we carry on and delete anyway.
+//
+// A delete makes the id invalid: GET, end and a second DELETE all answer
+// 400 "Invalid conversation_id" afterwards. We therefore read a 400 on the
+// delete as already gone, which is the outcome we wanted.
+//
+// What this does not claim: the record is gone from their API. Whether Tavus
+// keeps anything internally is a contract question for them, not something
+// this code can prove.
 async function endSession(id) {
   if (!id) return { ok: false, error: "no conversation id" };
-  await tv(`/v2/conversations/${encodeURIComponent(id)}/end`, { method: "POST" });
-  console.log(`  [tavus] ended conversation ${id}`);
-  return { ok: true };
+
+  let endError = null;
+  try {
+    await tv(`/v2/conversations/${encodeURIComponent(id)}/end`, { method: "POST" });
+  } catch (e) {
+    endError = e.message;
+  }
+
+  let deleted = false;
+  let deleteError = null;
+  try {
+    await tv(`/v2/conversations/${encodeURIComponent(id)}?hard=true`, { method: "DELETE" });
+    deleted = true;
+  } catch (e) {
+    if (e.status === 400) deleted = true;      // already gone
+    else deleteError = e.message;
+  }
+
+  if (deleted) console.log(`  [tavus] ended and hard deleted conversation ${id}`);
+  else console.error(`  [tavus] NOT DELETED ${id}: ${deleteError}`);
+  if (endError) console.log(`  [tavus] (end said: ${endError})`);
+
+  return {
+    ok: deleted,
+    deleted,
+    conversation_id: id,
+    ...(endError ? { endError } : {}),
+    ...(deleteError ? { error: deleteError } : {}),
+  };
+}
+
+// Any conversation still on the account, for the end-of-day sweep in
+// tools/tavus-purge.js. Undocumented but live: GET /v2/conversations answers
+// 200 with { data: [...] }.
+async function listConversations(limit = 100) {
+  const body = await tv(`/v2/conversations?limit=${encodeURIComponent(limit)}`);
+  return body.data || [];
+}
+
+async function deleteConversation(id) {
+  await tv(`/v2/conversations/${encodeURIComponent(id)}?hard=true`, { method: "DELETE" });
+  return { ok: true, conversation_id: id };
 }
 
 async function listAvatars(query = {}) {
@@ -207,4 +270,7 @@ async function getPal(id) {
   return tv(`/v2/pals/${encodeURIComponent(id)}`);
 }
 
-module.exports = { name: "tavus", init, createSession, endSession, listAvatars, listVoices, ensurePal, getPal };
+module.exports = {
+  name: "tavus", init, createSession, endSession, listAvatars, listVoices,
+  ensurePal, getPal, listConversations, deleteConversation,
+};

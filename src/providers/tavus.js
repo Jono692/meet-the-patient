@@ -15,7 +15,7 @@ function textOf(props) {
   return String(props.speech || props.text || props.transcript || props.utterance || "").trim();
 }
 
-export async function start({ session, videoEl, micId, on }) {
+export async function start({ session, videoEl, micId, on, emotion }) {
   const url = session?.conversation_url || session?.session_token;
   const conversationId = session?.conversation_id;
   if (!url) throw new Error("No conversation_url from the server");
@@ -38,14 +38,20 @@ export async function start({ session, videoEl, micId, on }) {
     audioEl.remove();
   };
 
+  // A fixed facial emotion for the whole consult (conversation.set_emotion). Tavus holds it
+  // while she listens and while she speaks until another is sent. It is sent when the
+  // patient joins and again when her video starts, because a message sent before she is in
+  // the room can be lost. Repeating the same emotion is harmless.
+  const holdEmotion = () => { if (emotion) sendEvent("conversation.set_emotion", { emotion }); };
+
   call.on("track-started", ({ participant, track, type }) => {
     if (!participant || participant.local || !track) return;
-    if (type === "video") videoEl.srcObject = new MediaStream([track]);
+    if (type === "video") { videoEl.srcObject = new MediaStream([track]); holdEmotion(); }
     if (type === "audio") { audioEl.srcObject = new MediaStream([track]); audioEl.play().catch(() => {}); }
   });
 
   call.on("joined-meeting", () => on.status("Live"));
-  call.on("participant-joined", (e) => { if (!e?.participant?.local) on.status("Live"); });
+  call.on("participant-joined", (e) => { if (!e?.participant?.local) { on.status("Live"); holdEmotion(); } });
   call.on("error", (e) => on.status("Error: " + (e?.errorMsg || "unknown")));
   call.on("left-meeting", () => { if (!ended) { ended = true; cleanup(); on.ended("left"); } });
 
@@ -99,11 +105,13 @@ export async function start({ session, videoEl, micId, on }) {
     try { await call.setInputDevicesAsync({ audioDeviceId: micId }); } catch (e) { console.warn("mic select", e); }
   }
 
-  const sendEvent = (event_type, properties) => {
+  // A function declaration on purpose, so it is hoisted: joining can fire participant-joined,
+  // which sends the emotion, before execution reaches this line.
+  function sendEvent(event_type, properties) {
     const msg = { message_type: "conversation", event_type, conversation_id: conversationId };
     if (properties) msg.properties = properties;
     try { call.sendAppMessage(msg, "*"); } catch (e) { console.warn("sendAppMessage", e); }
-  };
+  }
 
   return {
     provider: "tavus",
@@ -128,6 +136,11 @@ export async function start({ session, videoEl, micId, on }) {
       return !muted;
     },
     interrupt() { sendEvent("conversation.interrupt"); },
+    // "" clears a held emotion.
+    setEmotion(e) { sendEvent("conversation.set_emotion", { emotion: e || "" }); },
+    // Test aid: makes the patient hear `text` as if the surgeon had just said it, so a
+    // consult can be exercised without a microphone. Not wired to anything on the stand.
+    respond(text) { sendEvent("conversation.respond", { text }); },
     info() {
       return {
         resolution: videoEl && videoEl.videoWidth ? videoEl.videoWidth + "x" + videoEl.videoHeight : null,

@@ -15,7 +15,7 @@
          padding:calc(env(safe-area-inset-top) + 14px) 13px calc(env(safe-area-inset-bottom) + 18px);
          -webkit-user-select:none; user-select:none; }
   h1 { font-size:12px; letter-spacing:2.4px; text-transform:uppercase; color:var(--dim);
-       margin:0 0 14px; font-weight:700; }
+       margin:0; font-weight:700; }
 
   /* PIN gate */
   #gate { display:none; }
@@ -54,11 +54,20 @@
          padding:9px 11px; display:none; }
   .err.on { display:block; }
   footer { color:var(--dim); font-size:11px; text-align:center; margin-top:6px; }
+
+  /* Alcon_R.png is the approved reversed wordmark from the brand portal, used as supplied.
+     The guidelines require clear space around it and forbid placing it inside a shape, so it
+     sits in the page header on the page background - never on a card. */
+  #brand { margin:0 0 22px; }
+  #mark { display:block; height:20px; width:auto; margin-bottom:22px; }
 </style>
 </head>
 <body>
 
-<h1>Meet the Patient &middot; stand control</h1>
+<header id="brand">
+  <img id="mark" src="alcon.png" alt="Alcon">
+  <h1>Meet the Patient &middot; stand control</h1>
+</header>
 
 <div id="gate">
   <p>Enter the control PIN.</p>
@@ -184,8 +193,15 @@ function lock() {
 }
 
 function boot() {
-  rooms = [{ base: "/api", cmd: "/api/room/command", label: "Room " + (cfg.roomId || "A") + " · this PC" }];
-  if (cfg.hasPeer) rooms.push({ base: "/api/peer", cmd: "/api/peer/command", label: "Other room" });
+  // Rooms are numbered, not lettered, and Room 1 is always the top card whichever PC is
+  // serving this page - so the host's phone reads the same in both rooms.
+  var mine = (cfg.roomId || "A").toUpperCase() === "B" ? 2 : 1;
+  var local = { base: "/api", cmd: "/api/room/command", label: "Room " + mine };
+  rooms = [local];
+  if (cfg.hasPeer) {
+    var other = { base: "/api/peer", cmd: "/api/peer/command", label: "Room " + (mine === 1 ? 2 : 1) };
+    rooms = mine === 1 ? [local, other] : [other, local];
+  }
   document.getElementById("rooms").innerHTML = "";
   els = {};
   rooms.forEach(function (r) { els[r.base] = card(r); });
