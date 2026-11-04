@@ -2016,3 +2016,65 @@ Friday, which is his to answer.
 
 The Mac's `public/app.js` is still the old bundle, deliberately: the hold screen is not on the
 demo link, only on the show PCs' update.
+
+**4 Nov, later — Caleb's feedback is in, and UPDATE-3 replaces UPDATE-2.** Caleb Bartolo
+(Alcon, Product Manager PCIOLs ANZ) tested Margaret and Rami on the morning of 4 Nov and
+emailed four changes, cc Polly. Three are done, one is not possible.
+
+- **Margaret and Rami now name the cataract diagnosis** when the surgeon asks what has brought
+  them in, as Peter already did. Caleb's reason: without it the surgeon goes back and forth for
+  a while before reaching the starting line. It was not an oversight — both behaviour notes
+  deliberately opened on the lifestyle complaint instead, Margaret on the three pairs of glasses
+  and Rami on concise answers. Both notes now put the diagnosis first and keep the complaint.
+- **Rami's visual field loss is gone.** "Some mild visual field loss, stable" now reads "no
+  visual field loss", in the clinical file, in his red flags and in the lens rationale that
+  leaned on it. Alcon's clinical call, which is theirs to make. He is still the Vivity candidate
+  on an intermediate-dominant working life, night driving and mild glaucoma on drops.
+- **Rami now says why he was referred**: the ophthalmologist who looks after his glaucoma does
+  not do cataract surgery. In his story and in `referred_by`.
+- **Not done: glasses on Rami's avatar.** That face is the actor filmed on 20 October. The only
+  way to add glasses is to film him again. Caleb said no worries if it is not possible.
+
+The demo link is live on all of it: app restarted, all three PALs rebuilt and read back from
+Tavus matching `personas.json` (peter 8579 chars, margaret 8923, rami 9023), and a consult
+opened and hard deleted for Margaret and for Rami through the real `/api/session` path.
+
+**A measured finding worth keeping: `tavus-sync.js --push` into a running app does nothing.**
+The app loads `.tavus-pals.json` at boot and holds it in memory. Push after a restart and the
+running app never sees the new entries: the next consult recomputes the signature, misses
+against its stale in-memory cache, builds its own duplicate PAL and overwrites the file. That is
+what happened here — the push created `pe65f095e133` and `p897b1c44a3f`, and the app then
+replaced them with `p4621289f911` and `peafc48a5b72`, which are what the link now serves. The
+prompt was correct either way, since it is the same `personas.json`, but the push was wasted and
+two orphan PALs are on the account. The order that works is push, then restart.
+
+**UPDATE-3.ps1 supersedes UPDATE-2.ps1.** Same thirteen files. `personas.json` carries Caleb's
+changes, the brief is rewritten for it, and step 6 (push the prompt) now runs before step 7
+(restart the app) for the reason above. UPDATE-2.ps1 has been withdrawn from `/update` — it pins
+the pre-Caleb `personas.json` and would stop on that hash, which is the check working but a bad
+thing to meet at bump-in. Cloudflare may still serve a cached copy of it for up to four hours.
+
+    UPDATE-3.ps1  88620627073215F3BFDD2C4E5F6F88BC0952BC4FE868E20273A3CA67E2053488
+
+All thirteen pins verified three ways again: the pin in the script, the file on disk, and the
+bytes the tunnel serves with a fresh `?v=`. Published to `demo.meetthepatient.com.au/update/`
+and copied to iCloud at `Alcon RANZCO 2026/Update 3 - Caleb changes, prompt, hard delete, hold
+screen/`, byte-identical.
+
+**The T7 cannot be updated — it is in Auckland.** Its `5 Update 2` folder still holds the old
+`personas.json`, so UPDATE-3 run with `-FromFolder` against it stops on that hash and changes
+nothing. Use the tunnel route, which is one line and needs no hand-typed fingerprint beyond the
+script's own; both show PCs are online. Or refresh that folder from iCloud first.
+
+**Open: four conversations on the Tavus account**, all from 3 Nov 22:51-22:53, ended but never
+hard deleted — leftovers of that night's tool testing, not surgeon consults. Bulk deletion is a
+human click by design, so it is `node tools/tavus-purge.js --delete` on the Mac when Jono wants
+it. The two orphan PALs from the push above are also still there; PALs cost nothing and nobody
+sees them but us.
+
+**`SESSION_BUDGET` reset again.** It read 10 of 100 before the restarts and is back to 0. Still
+an in-memory counter, still not fixed.
+
+Not done: no reply sent to Caleb. Drafted for Jono to send himself, not sent — the Polly email
+on 4 Nov went out in a register that was not his, and client mail from this session goes to him
+first from now on.

@@ -1,9 +1,24 @@
 <#
-  Meet the Patient - update 2: the prompt, the hard delete and the hold screen.
+  Meet the Patient - update 3: the prompt, the hard delete and the hold screen.
   Run this on each show PC. One pass, nothing room-specific.
 
-    over the tunnel        powershell -ExecutionPolicy Bypass -File UPDATE-2.ps1
-    from the T7, offline   powershell -ExecutionPolicy Bypass -File UPDATE-2.ps1 -FromFolder "D:\MTP-SHOW-KIT\5 Update 2 - prompt, hard delete, hold screen"
+  THIS REPLACES UPDATE-2. Same thirteen files. Two differences:
+    * personas.json carries Caleb Bartolo's changes of 4 November - Margaret and Rami
+      now name the cataract diagnosis when asked what has brought them in, Rami's file
+      reads "no visual field loss" (Alcon's clinical call) and he says his glaucoma
+      ophthalmologist does not do cataract surgery, which is why he was referred on.
+    * the prompt push moved from after the restart to before it. The app reads the PAL
+      cache once at boot, so pushing after a restart left the running app blind to the
+      new entries: it built its own duplicate PAL on the first consult and overwrote
+      them. Measured on the Mac on 4 Nov. The prompt was correct either way - it is the
+      same personas.json - but the push was doing nothing.
+
+  The T7's "5 Update 2" folder still holds the OLD personas.json, so -FromFolder against
+  it will stop on that hash and change nothing. Refresh the folder from iCloud first, or
+  use the tunnel.
+
+    over the tunnel        powershell -ExecutionPolicy Bypass -File UPDATE-3.ps1
+    from the T7, offline   powershell -ExecutionPolicy Bypass -File UPDATE-3.ps1 -FromFolder "D:\MTP-SHOW-KIT\5 Update 2 - prompt, hard delete, hold screen"
 
   What it changes and why:
 
@@ -73,23 +88,23 @@ $Base   = "https://demo.meetthepatient.com.au/update"
 $Api    = "http://localhost:3000"
 $Stamp  = Get-Date -Format "yyyyMMdd-HHmmss"
 $Backup = Join-Path $App "deploy\backup-$Stamp"
-$Tmp    = Join-Path $env:TEMP "mtp-update2-$Stamp"
+$Tmp    = Join-Path $env:TEMP "mtp-update3-$Stamp"
 $Bust   = "$Stamp-$(Get-Random)"
 
 $Files = @(
-  @{ Name = "personas.json";   Url = "personas.json";             Dest = "personas.json";                    Sha = "63A1DB04BF502A46D0A899D20C0D02CD2D5B9CE537DCBB80CDDF105A752BBCFA" },
-  @{ Name = "prompt.js";       Url = "prompt.js";                 Dest = "providers\prompt.js";              Sha = "7AE305BF479B7960E606DA6BAAB2A52171DE322B67B55E80CB2D6393CCBD8DE7" },
-  @{ Name = "tavus provider";  Url = "tavus-provider.js";         Dest = "providers\tavus.js";               Sha = "744F40CFA0ADDA599DFCC719C5E3E5DF55556B9CBB6AF9AD4C466B366A84B651" },
-  @{ Name = "server.js";       Url = "server.js";                 Dest = "server.js";                        Sha = "6AAD4243CE078D8166C4FD7EF69ACDECAC9C3E35EF7F33A26C375B61C139208C" },
-  @{ Name = "stand page";      Url = "app.js";                    Dest = "public\app.js";                    Sha = "F2C256A2724651770BA48E386A62379AC6BAE743CB87717A43283548CF319D7C" },
-  @{ Name = "hold screen";     Url = "hold.mp4";                  Dest = "public\idle\hold.mp4";             Sha = "1876E7594FD4A1374D286DFDF933D81C5912572160E2D97F90BA56DF439D4DBA" },
-  @{ Name = "control page";    Url = "control-index.txt";         Dest = "public\control\index.html";        Sha = "ED81B677C77CBEE6A314D3171887BFA345023239735DFC818743FE69EEA8B514" },
-  @{ Name = "Alcon logo";      Url = "alcon.png";                 Dest = "public\control\alcon.png";         Sha = "ABA33D8E0900F0DC75D739FD3B205373413986F856D36AEF03897BEED93225D4" },
-  @{ Name = "tavus-sync";      Url = "tavus-sync.js";             Dest = "tools\tavus-sync.js";              Sha = "59DF611E9E93660C21980B4787098AC9FB33D7D5CB933A89466CA3D638E718DC" },
-  @{ Name = "delete-check";    Url = "tavus-delete-check.js";     Dest = "tools\tavus-delete-check.js";      Sha = "267FBA073066773A040278AF119BC51843FF3EF7B7BAC27E1BF59152D132D352" },
-  @{ Name = "tavus-purge";     Url = "tavus-purge.js";            Dest = "tools\tavus-purge.js";             Sha = "D4C320D75243E82BBFA58516967DFD42A7CA4646ED5AC1DC198690EFFF071A2B" },
-  @{ Name = "CLAUDE.md";       Url = "CLAUDE-MD-SHOW-PC.md";      Dest = "CLAUDE.md";                        Sha = "8E3B26E4AA68FD4F93667F5BEED055B8ABA287C0296D8DEF88312670D75153FA" },
-  @{ Name = "Auckland brief";  Url = "CLAUDE-BRIEF-AUCKLAND.md";  Dest = "deploy\CLAUDE-BRIEF-AUCKLAND.md";  Sha = "AE7EF73674574A0D92C211B659318EBF2A60B734EB0C8C09D86FFBCE3BCC2741" }
+  @{ Name = "personas.json";   Url = "personas.json";             Dest = "personas.json";                             Sha = "32A293FBE01215674B104E41B39DD6C6FCA2BAFC910BF9897578F8CD4C1E062E" },
+  @{ Name = "prompt.js";       Url = "prompt.js";                 Dest = "providers\prompt.js";                       Sha = "7AE305BF479B7960E606DA6BAAB2A52171DE322B67B55E80CB2D6393CCBD8DE7" },
+  @{ Name = "tavus provider";  Url = "tavus-provider.js";         Dest = "providers\tavus.js";                        Sha = "744F40CFA0ADDA599DFCC719C5E3E5DF55556B9CBB6AF9AD4C466B366A84B651" },
+  @{ Name = "server.js";       Url = "server.js";                 Dest = "server.js";                                 Sha = "6AAD4243CE078D8166C4FD7EF69ACDECAC9C3E35EF7F33A26C375B61C139208C" },
+  @{ Name = "stand page";      Url = "app.js";                    Dest = "public\app.js";                             Sha = "F2C256A2724651770BA48E386A62379AC6BAE743CB87717A43283548CF319D7C" },
+  @{ Name = "hold screen";     Url = "hold.mp4";                  Dest = "public\idle\hold.mp4";                      Sha = "1876E7594FD4A1374D286DFDF933D81C5912572160E2D97F90BA56DF439D4DBA" },
+  @{ Name = "control page";    Url = "control-index.txt";         Dest = "public\control\index.html";                 Sha = "ED81B677C77CBEE6A314D3171887BFA345023239735DFC818743FE69EEA8B514" },
+  @{ Name = "Alcon logo";      Url = "alcon.png";                 Dest = "public\control\alcon.png";                  Sha = "ABA33D8E0900F0DC75D739FD3B205373413986F856D36AEF03897BEED93225D4" },
+  @{ Name = "tavus-sync";      Url = "tavus-sync.js";             Dest = "tools\tavus-sync.js";                       Sha = "59DF611E9E93660C21980B4787098AC9FB33D7D5CB933A89466CA3D638E718DC" },
+  @{ Name = "delete-check";    Url = "tavus-delete-check.js";     Dest = "tools\tavus-delete-check.js";               Sha = "267FBA073066773A040278AF119BC51843FF3EF7B7BAC27E1BF59152D132D352" },
+  @{ Name = "tavus-purge";     Url = "tavus-purge.js";            Dest = "tools\tavus-purge.js";                      Sha = "D4C320D75243E82BBFA58516967DFD42A7CA4646ED5AC1DC198690EFFF071A2B" },
+  @{ Name = "CLAUDE.md";       Url = "CLAUDE-MD-SHOW-PC.md";      Dest = "CLAUDE.md";                                 Sha = "8E3B26E4AA68FD4F93667F5BEED055B8ABA287C0296D8DEF88312670D75153FA" },
+  @{ Name = "Auckland brief";  Url = "CLAUDE-BRIEF-AUCKLAND.md";  Dest = "deploy\CLAUDE-BRIEF-AUCKLAND.md";           Sha = "3D0AE9B217F4619C32EEFECC4B7484B23774090A2CE69532D3BD8CD19714F102" }
 )
 
 function Say  ($m) { Write-Host ("   " + $m) }
@@ -97,7 +112,7 @@ function Head ($m) { Write-Host ""; Write-Host $m -ForegroundColor Cyan }
 function Good ($m) { Write-Host $m -ForegroundColor Green }
 function Bad  ($m) { Write-Host $m -ForegroundColor Red }
 
-Head "Meet the Patient - update 2: prompt, hard delete, hold screen"
+Head "Meet the Patient - update 3: prompt, hard delete, hold screen"
 if (-not (Test-Path $App)) { throw "No app folder at $App - is this the right PC?" }
 
 # ---------------------------------------------------------------- 1. find Node, and prove it
@@ -197,11 +212,44 @@ foreach ($f in $Files) {
   Say "$($f.Name) -> $($f.Dest)"
 }
 
-# ---------------------------------------------------------------- 6. restart the app only
+# ---------------------------------------------------------------- 6. prove the prompt
+# Pushes the new prompt to Tavus, reads back what Tavus stored and compares. This also
+# warms the PAL cache, so the first surgeon of the day is not waiting while a PAL is built.
+# BEFORE the restart on purpose, not after: the app reads .tavus-pals.json once at boot, so
+# a push into a running app is written to a file nothing re-reads, and the first consult
+# then builds a duplicate PAL and overwrites it. Push first, restart second, and the app
+# comes up already holding the right ids. The old server is still running during the push
+# and still has the old prompt in memory - that is what the restart on the next step is for.
+# A failure here is a FAILED CHECK, not a failed update: the files are in either way, so
+# nothing is thrown and the restart still happens.
+Head "6. Checking the prompt reached Tavus"
+# $ErrorActionPreference is Stop for the whole script, and a node tool writing a word to
+# stderr is enough to throw under it. A check is not worth throwing over once the files
+# are in, so both checks run with their own error handling and report instead.
+$syncOk = $false
+try {
+  Push-Location $App
+  # Windows PowerShell 5.1 turns a native command's stderr into error records, and under
+  # Stop one word on stderr would throw. Continue, locally, for the length of the check.
+  $ErrorActionPreference = "Continue"
+  & $node "tools\tavus-sync.js" "--push" 2>&1 | Write-Host
+  $syncOk = ($LASTEXITCODE -eq 0)
+} catch {
+  Bad "   The prompt check could not run: $($_.Exception.Message)"
+} finally { Pop-Location; $ErrorActionPreference = "Stop" }
+if ($syncOk) { Good "   all three patients match personas.json" }
+else {
+  Bad "   The prompt check did not pass - read the three lines above."
+  Bad "   The files ARE installed and the restart below still happens, so the app will come"
+  Bad "   up on the new prompt regardless. Do not run this script again; tell Jono."
+}
+
+# ---------------------------------------------------------------- 7. restart the app only
 # Stop by the process that actually holds port 3000, never by name: cloudflared and the
 # kiosk browser must survive, and a stray "stop every node" would take out anything else.
-# The restart is what picks up the new prompt: server.js reads personas.json once at boot.
-Head "6. Restarting the app"
+# The restart is what picks up the new prompt: server.js reads personas.json once at boot,
+# and the PAL cache the step before it has just written.
+Head "7. Restarting the app"
 $held = @()
 try {
   $held = Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue |
@@ -227,8 +275,8 @@ try {
   throw "App not started. Reboot to recover."
 }
 
-# ---------------------------------------------------------------- 7. prove the app is back
-Head "7. Checking the app"
+# ---------------------------------------------------------------- 8. prove the app is back
+Head "8. Checking the app"
 $cfg = $null
 foreach ($i in 1..30) {
   Start-Sleep -Seconds 2
@@ -242,32 +290,6 @@ if (-not $cfg) {
 Say ("room {0}" -f $cfg.roomId)
 if ($cfg.displayMode -eq "live") { Say "display mode live" } else { Bad "   DISPLAY MODE IS '$($cfg.displayMode)' - must be live for the show" }
 if ($cfg.keepTranscripts)        { Bad "   TRANSCRIPTS ARE ON - must be off for the show" } else { Say "transcripts off" }
-
-# ---------------------------------------------------------------- 8. prove the prompt
-# Pushes the new prompt to Tavus, reads back what Tavus stored and compares. This also
-# warms the PAL cache, so the first surgeon of the day is not waiting while a PAL is built.
-# From here on a failure is a FAILED CHECK, not a failed update: the files are in and the
-# app is running either way, so nothing is thrown.
-Head "8. Checking the prompt reached Tavus"
-# $ErrorActionPreference is Stop for the whole script, and a node tool writing a word to
-# stderr is enough to throw under it. A check is not worth throwing over once the files
-# are in, so both checks run with their own error handling and report instead.
-$syncOk = $false
-try {
-  Push-Location $App
-  # Windows PowerShell 5.1 turns a native command's stderr into error records, and under
-  # Stop one word on stderr would throw. Continue, locally, for the length of the check.
-  $ErrorActionPreference = "Continue"
-  & $node "tools\tavus-sync.js" "--push" 2>&1 | Write-Host
-  $syncOk = ($LASTEXITCODE -eq 0)
-} catch {
-  Bad "   The prompt check could not run: $($_.Exception.Message)"
-} finally { Pop-Location; $ErrorActionPreference = "Stop" }
-if ($syncOk) { Good "   all three patients match personas.json" }
-else {
-  Bad "   The prompt check did not pass - read the three lines above."
-  Bad "   The update IS installed. Do not run this script again; sort the prompt out first."
-}
 
 # ---------------------------------------------------------------- 9. prove the hard delete
 # Opens a throwaway conversation, ends it through the server's own endSession, then asks
@@ -290,8 +312,8 @@ else {
 
 # ---------------------------------------------------------------- done
 Write-Host ""
-if ($syncOk -and $delOk) { Good "Update 2 installed and both checks passed." }
-else { Bad "Update 2 installed, but a check failed. Read back up the screen." }
+if ($syncOk -and $delOk) { Good "Update 3 installed and both checks passed." }
+else { Bad "Update 3 installed, but a check failed. Read back up the screen." }
 Say "Backup kept at $Backup"
 Write-Host ""
 Write-Host "ONE THING LEFT: REBOOT THIS PC." -ForegroundColor Yellow

@@ -1,6 +1,31 @@
-MEET THE PATIENT - UPDATE 2
-Prepared on the Mac mini, 3 Nov 2026. Everything here is verified against SHA256SUMS.txt
+MEET THE PATIENT - UPDATE 3
+Prepared on the Mac mini, 4 Nov 2026. Everything here is verified against SHA256SUMS.txt
 and was checked byte-for-byte through the tunnel the same way the PCs will fetch it.
+
+UPDATE 3 REPLACES UPDATE 2. DO NOT RUN UPDATE-2.ps1.
+Same thirteen files, same steps. Two differences:
+
+  personas.json         Caleb Bartolo's changes of 4 November, after he tested Margaret
+                        and Rami. Margaret and Rami now name the cataract diagnosis when
+                        the surgeon asks what has brought them in, as Peter already did.
+                        Rami's file reads "no visual field loss" where it read "some mild
+                        visual field loss, stable" - Alcon's clinical call, changed in all
+                        three places it appeared. Rami also says the ophthalmologist who
+                        looks after his glaucoma does not do cataract surgery, which is
+                        why he has been referred on. Not done: glasses on Rami's avatar.
+                        That face is the actor filmed on 20 October and the only way to
+                        add glasses is to film him again. Caleb said no worries if not.
+
+  step order            The prompt push now runs BEFORE the app restart instead of after.
+                        The app reads the PAL cache once at boot, so a push into a running
+                        app wrote entries nothing would re-read: the first consult then
+                        built its own duplicate PAL and overwrote them. Measured on the Mac
+                        on 4 Nov. The prompt was right either way - it is the same
+                        personas.json - but the push was doing nothing.
+
+If you are holding the T7's "5 Update 2" folder, its personas.json is the OLD one. Running
+UPDATE-3.ps1 with -FromFolder against it will stop on that hash and change nothing, which
+is the check working. Refresh the folder from iCloud first, or use the tunnel.
 
 WHAT IT CHANGES
 
@@ -9,9 +34,9 @@ WHAT IT CHANGES
                         the patient's own eye history and test results, and what matters
                         most to them. Without it the patients cannot tell a surgeon their
                         scans and have no priorities to be listened to, which is the
-                        activation. personas.json adds 3 Nov's tightening: the AI question,
-                        no ratings or scores, a friend's lens described but never how it
-                        went, medication named but never praised.
+                        activation. personas.json also carries 3 Nov's tightening: the AI
+                        question, no ratings or scores, a friend's lens described but never
+                        how it went, medication named but never praised.
 
   Hard delete           providers\tavus.js and server.js. Every consult is now ended AND
                         hard deleted from Tavus the moment it finishes. The outcome goes
@@ -36,19 +61,22 @@ WHAT IT CHANGES
 
 HOW TO APPLY IT
 
-  Over the tunnel, while the Mac is up - one line in PowerShell as Administrator:
+  Over the tunnel, while the Mac is up - one line in PowerShell as Administrator. This
+  checks the script's own fingerprint and refuses to run it if it does not match:
 
-    $ErrorActionPreference="Stop";[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$f="$env:TEMP\UPDATE-2.ps1";iwr "https://demo.meetthepatient.com.au/update/UPDATE-2.ps1?v=$(Get-Random)" -OutFile $f -UseBasicParsing -Headers @{Accept="*/*"};if((Get-FileHash $f -Algorithm SHA256).Hash -ne "8852D4AF274AB5302607BFE04514D9CB4E159F5305CE88261A1AEF8C7098E1E9"){throw "UPDATE-2.ps1 does not match. Nothing has been run."};powershell -ExecutionPolicy Bypass -File $f
+    $ErrorActionPreference="Stop";[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$f="$env:TEMP\UPDATE-3.ps1";iwr "https://demo.meetthepatient.com.au/update/UPDATE-3.ps1?v=$(Get-Random)" -OutFile $f -UseBasicParsing -Headers @{Accept="*/*"};if((Get-FileHash $f -Algorithm SHA256).Hash -ne "88620627073215F3BFDD2C4E5F6F88BC0952BC4FE868E20273A3CA67E2053488"){throw "UPDATE-3.ps1 does not match. Nothing has been run."};powershell -ExecutionPolicy Bypass -File $f
 
-  From this folder on the T7, with no internet - same script, local files:
+  From this folder on the T7, with no internet - same script, local files. Only after the
+  folder has been refreshed with the new personas.json and brief:
 
-    powershell -ExecutionPolicy Bypass -File "<this folder>\UPDATE-2.ps1" -FromFolder "<this folder>"
+    powershell -ExecutionPolicy Bypass -File "<this folder>\UPDATE-3.ps1" -FromFolder "<this folder>"
 
   The -FromFolder route needs no fingerprint typed in by hand: the script checks all
   thirteen files against their own SHA-256 as it copies them. Either way it finds and runs
-  Node BEFORE it stops or changes anything, checks every file's SHA-256 before touching the PC, waits for a gap between consults, backs the
-  old files up, installs, restarts the app, then proves the prompt reached Tavus and that a
-  consult really is deleted.
+  Node BEFORE it stops or changes anything, checks every file's SHA-256 before touching the
+  PC, waits for a gap between consults, backs the old files up, installs, pushes the prompt
+  to Tavus, restarts the app, then proves the app is back and that a consult really is
+  deleted.
 
 AND THEN REBOOT THE PC. The kiosk browser is still showing the old stand page from memory
 and F5 is swallowed by the app, so the hold screen will not appear until it reloads.

@@ -69,7 +69,16 @@ The host drives **both** rooms from a web page on their phone: `https://room-a.m
 
 ---
 
-## JOB 1 — run UPDATE-2 on both PCs (prepared and verified, not yet applied)
+## JOB 1 — run UPDATE-3 on both PCs (prepared and verified, not yet applied)
+
+**UPDATE-3 replaces UPDATE-2. Do not run UPDATE-2.** Same thirteen files, same steps, but
+`personas.json` now carries Caleb Bartolo's 4 November changes and the prompt push happens
+before the restart instead of after. If you run UPDATE-2 you install the pre-Caleb prompt.
+
+**Use the tunnel route below, not the T7.** The `5 Update 2` folder on the T7 still holds the
+old `personas.json`, so UPDATE-3 run with `-FromFolder` against it will fail its hash check and
+change nothing. That is the script working correctly, not a fault. Either refresh that folder
+from iCloud first, or just use the tunnel — both show PCs are online.
 
 This is the first job of the trip and it is one command per PC. It carries three things:
 
@@ -81,6 +90,17 @@ priorities and the forced choice). With it, a patient cannot tell a surgeon thei
 no priorities to be listened to — which is the whole activation. `personas.json` also carries
 3 Nov's tightening: the AI question, no ratings or scores, a friend's lens described but never
 how it turned out, medication named but never praised.
+
+**Caleb's four changes, 4 November, after he tested Margaret and Rami.** Three are in; one was
+not possible. Margaret and Rami now both name the cataract diagnosis when the surgeon asks what
+has brought them in, as Peter already did — Caleb's point was that without it the surgeon spends
+the opening minutes getting to the starting line. Rami's file now reads *no visual field loss*
+where it read *some mild visual field loss, stable*; that is Alcon's clinical call and it is
+changed in all three places it appeared, including the lens rationale that leaned on it. Rami
+also now says his glaucoma ophthalmologist does not do cataract surgery, which is why he was
+referred on. The one not done: Caleb asked whether Rami's avatar could be given glasses. It
+cannot — that face is the actor filmed on 20 October, and the only way to add glasses is to film
+him again. Caleb said no worries if not.
 
 The prompt is built on the PC and sent to Tavus, not stored there. It is read **once at boot**,
 so this needs an app restart — the script does it.
@@ -101,29 +121,32 @@ second app fighting the running one for port 3000.
 
 ### How to run it
 
-**From the T7, no internet needed — use this one.** The script checks every file against its
-own SHA-256 as it goes, so this route needs no fingerprint typed in by hand:
+**From the T7, no internet needed.** Only after you have refreshed that folder with the new
+`personas.json`, the new brief and `UPDATE-3.ps1` from iCloud — otherwise it will stop on the
+`personas.json` hash and change nothing. The script checks every file against its own SHA-256
+as it goes, so this route needs no fingerprint typed in by hand:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File "D:\MTP-SHOW-KIT\5 Update 2 - prompt, hard delete, hold screen\UPDATE-2.ps1" -FromFolder "D:\MTP-SHOW-KIT\5 Update 2 - prompt, hard delete, hold screen"
+powershell -ExecutionPolicy Bypass -File "D:\MTP-SHOW-KIT\5 Update 2 - prompt, hard delete, hold screen\UPDATE-3.ps1" -FromFolder "D:\MTP-SHOW-KIT\5 Update 2 - prompt, hard delete, hold screen"
 ```
 
 Check the drive letter first. `SHA256SUMS.txt` and a `README.txt` sit beside the script.
 
-**Over the tunnel, while the Mac is up.** Same script, fetched instead of copied. Verify the
-script itself before running it, because nothing else has checked it yet: its SHA-256 is the
-`UPDATE-2.ps1` line of `SHA256SUMS.txt` in that T7 folder, and is also recorded in `BRIEF.md`.
+**Over the tunnel, while the Mac is up. Use this one.** Same script, fetched instead of copied.
+Verify the script itself before running it, because nothing else has checked it yet: its SHA-256
+is the `UPDATE-3.ps1` line of `SHA256SUMS.txt` served beside it in `/update/`, and is also
+recorded in `BRIEF.md`.
 Do not take it from this file — a brief that quoted the fingerprint of the script that installs
 the brief could never be kept true.
 
 ```powershell
-$ErrorActionPreference="Stop";[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$f="$env:TEMP\UPDATE-2.ps1";iwr "https://demo.meetthepatient.com.au/update/UPDATE-2.ps1?v=$(Get-Random)" -OutFile $f -UseBasicParsing -Headers @{Accept="*/*"};(Get-FileHash $f -Algorithm SHA256).Hash
+$ErrorActionPreference="Stop";[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$f="$env:TEMP\UPDATE-3.ps1";iwr "https://demo.meetthepatient.com.au/update/UPDATE-3.ps1?v=$(Get-Random)" -OutFile $f -UseBasicParsing -Headers @{Accept="*/*"};(Get-FileHash $f -Algorithm SHA256).Hash
 ```
 
 That prints the fingerprint. If it matches, run it:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File "$env:TEMP\UPDATE-2.ps1"
+powershell -ExecutionPolicy Bypass -File "$env:TEMP\UPDATE-3.ps1"
 ```
 
 The `?v=` is not decoration: Cloudflare caches that folder for four hours, 404s included.
@@ -133,18 +156,22 @@ The `?v=` is not decoration: Cloudflare caches that folder for four hours, 404s 
 1. Finds Node and **proves it runs** — before anything is stopped or changed. (On 3 Nov v1 of
    the old script stopped the app and then could not start it, because it called a bare `node`.
    Node is not on PATH here. ALCON 1 needed a reboot.)
-2. Fetches all eleven and checks every hash. One bad hash and nothing is touched.
+2. Fetches all thirteen and checks every hash. One bad hash and nothing is touched.
 3. Waits for a gap between consults — up to 10 minutes, then gives up rather than cutting in.
 4. Backs the old files up to `deploy\backup-<timestamp>\`.
 5. Installs.
-6. Restarts the app only — by the process holding port 3000, so the tunnel and the kiosk live.
-7. Checks the app is back, in `live` mode, transcripts off.
-8. Pushes the prompt to Tavus and reads it back: *"all three patients match personas.json"*.
+6. Pushes the prompt to Tavus and reads it back: *"all three patients match personas.json"*.
    This also warms the PAL cache, so the first surgeon is not waiting while one is built.
+   **This now runs before the restart, not after.** The app reads the PAL cache once at boot:
+   push after a restart and the running app never sees the entries, builds its own duplicate
+   PAL on the first consult and overwrites them. Measured on the Mac on 4 Nov. The prompt was
+   right either way — it is the same `personas.json` both times — but the push was wasted.
+7. Restarts the app only — by the process holding port 3000, so the tunnel and the kiosk live.
+8. Checks the app is back, in `live` mode, transcripts off.
 9. Opens a throwaway conversation, ends it, then asks Tavus for it again. HTTP 400
    `Invalid conversation_id` is the pass.
 
-Steps 8 and 9 are checks, not installs. If one fails the update is still in and the app is
+Steps 6 and 9 are checks, not installs. If one fails the update is still in and the app is
 still running — read the screen and tell Jono, do not run the script again.
 
 ### Then reboot the PC
@@ -242,7 +269,7 @@ Empty output means it parses. Better still, build the spare on Friday and actual
   Mac. Do one on Friday: Start, a real conversation through the headset, End.
 - **Ethernet → 5G failover and a mid-consult line pull are untested.**
 - **Tavus data retention: our side is now done, theirs is not.** Transcripts are off three ways
-  with a date cutoff from 6 Nov, and from UPDATE-2 every consult is hard deleted from Tavus as it
+  with a date cutoff from 6 Nov, and from this update every consult is hard deleted from Tavus as it
   ends, logged in `events.jsonl`. What we cannot prove is what Tavus keeps internally after a
   delete — that is a contract question Jono has open with Dylan, along with whether participant
   audio is retained. Do not claim more than "the record is gone from their API".
@@ -264,7 +291,7 @@ MTP-SHOW-KIT\
   2 meet-the-patient repo\    the whole project as of 3 Nov, including src/ and BRIEF.md
   3 Footage\                  camera masters
   4 Docs\                     scope, proposal, scripts, BRIEF.md, this file
-  5 Update 2 - prompt,        UPDATE-2.ps1 + the eleven files it installs + SHA256SUMS.txt
+  5 Update 2 - prompt,        UPDATE-3.ps1 + the twelve files it installs + SHA256SUMS.txt
     hard delete, hold screen\ + README.txt. This is Job 1. Runs offline with -FromFolder.
   5 Hold screen update\       superseded by the folder above - app.js and hold.mp4 only,
                               without the prompt fix. Correct but incomplete.
