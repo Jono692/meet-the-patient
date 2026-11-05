@@ -2260,3 +2260,47 @@ takes `-FromFolder` and joins the folder path to the bare filenames, so that fol
 
 This is the route to use if the tunnel or the Mac is unavailable. It is **not** the T7's
 "5 Update 2" folder, which still holds the old `personas.json` and will fail its hash check.
+
+### 5 Nov 2026, late — tuning runbook for setup day, and a correction on Raven
+
+Jono asked what can be altered at the stand tomorrow, specifically for loud ambient noise, and how
+we deploy a change if the morning is not fantastic. Written up as `deploy/TUNING-RUNBOOK.md`, also
+in iCloud at `MTP-UPDATE-4/TUNING-RUNBOOK.md`. **Not part of the UPDATE-4 install**, nothing pins
+it. Summary and the corrections that came out of checking:
+
+**Raven is not the noise model.** Raven is perception — camera and screen. We have a mic and no
+camera, so it is off on purpose and turning it on earns nothing for noise. **Sparrow-2 is the
+noise-robust model and we are already on it.** Re-read Tavus's conversational-flow docs 5 Nov to
+confirm: sparrow-2 is "robust turn-taking in noisy environments", and `voice_isolation` "is not
+used by sparrow-2, which analyzes the full audio stream directly". So voice_isolation is a dead
+control for us, as the 3 Nov note said.
+
+**Correction to the 3 Nov entry.** That entry said Tavus's Medical Consultation example uses
+"interruptibility very low". The literal token in their example is `verylow`, and **`verylow` is
+not in their documented list of accepted values** (`low`, `medium`, `high`, default `medium`). Do
+not send it at the show. `low` is the documented floor.
+
+**The one real lever for a loud floor: `TAVUS_INTERRUPTIBILITY`, which we send as `high`.** That is
+the worst setting for a noisy stand — the patient stops talking the moment it hears speech-like
+audio. Tavus's best practices say lower is right for most experiences and `low` for important
+information delivery. The 3 Nov note flagged this as worth an A/B and it was never done. **Still
+not changed, because it rebuilds PALs and should be tested, not assumed.** One line in `.env`.
+`TAVUS_TURN_PATIENCE=high` is already correct; `high` is their documented medical setting and
+there is nothing above it.
+
+**Four tiers of change, with very different costs, now written down:**
+1. **Kiosk URL** (`?framing=`, `?fill=`, `?ox=`, `?key=`, `?sim=`, `?smooth=`, `?spill=`, `?bg=`) —
+   edit `show-start.ps1`, reboot. Fastest safe lever.
+2. **`config.local.json`** — ten keys only, all chroma and clicker. The server hot-reloads it, but
+   **the browser fetches `/api/config` once at page load and never again** (`src/client.js:612`),
+   and F5 is swallowed, so it still needs a kiosk reboot to reach the screen. Tier 2 buys almost
+   nothing over Tier 1. `DISPLAY_MODE`/`KEEP_TRANSCRIPTS`/`TRANSCRIPTS_CUTOFF` are stripped on load.
+3. **`.env` + push + restart** — every Tavus setting lives here and **none of them are reachable
+   from the overlay**; `layersFor()` reads `process.env` directly. Changing any layer setting
+   changes the PAL signature, so: edit `.env`, then `tavus-sync.js --push`, then `restart.flag`.
+   Push before restart, the 4 Nov lesson.
+4. **Code** — a build in Melbourne, a new hash, a new UPDATE script. Half an hour minimum and it
+   depends on the Mac and the tunnel. Do not plan the morning around it.
+
+**Not fixable at the stand, and the runbook says so plainly:** first-word latency (3.3–4.7 s), and
+turn patience, which is already at its documented maximum.
