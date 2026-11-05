@@ -1,8 +1,24 @@
 <#
-  Meet the Patient - update 3: the prompt, the hard delete and the hold screen.
-  Run this on each show PC. One pass, nothing room-specific.
+  Meet the Patient - update 4: the prompt, the hard delete, the hold screen and the
+  portrait framing. Run this on each show PC. One pass, nothing room-specific.
 
-  THIS REPLACES UPDATE-2. Same thirteen files. Two differences:
+  THIS REPLACES UPDATE-3. ONE file differs from UPDATE-3: public\app.js.
+
+    * public\app.js now frames the patient for a PORTRAIT screen. The Tavus feed is
+      1280x720 landscape and their API has no aspect setting, so object-fit:cover on a
+      1080x1920 screen showed only 31.6% of the frame's width - a head edge to edge, and
+      for Margaret, whose head centre sits at 61.4% across rather than the middle, the
+      right of her face off the edge entirely. Head centres measured 5 Nov off the Tavus
+      upload crops: Peter .542, Margaret .614, Rami .489. The page now draws the whole
+      frame at 67.5% of the screen height, sat on the bottom edge, face centred, with the
+      chroma key's own #003595 around it. Landscape screens are untouched.
+      Fallbacks on the kiosk URL, no rebuild needed: ?framing=nudge, ?framing=off,
+      ?fill=, ?ox=. See JOB 2 in deploy\CLAUDE-BRIEF-AUCKLAND.md.
+
+  If UPDATE-3 has already been run on this PC, run this over the top of it. It is the
+  same install and it is idempotent.
+
+  Carried over from UPDATE-3, which replaced UPDATE-2. Two differences from UPDATE-2:
     * personas.json carries Caleb Bartolo's changes of 4 November - Margaret and Rami
       now name the cataract diagnosis when asked what has brought them in, Rami's file
       reads "no visual field loss" (Alcon's clinical call) and he says his glaucoma
@@ -17,8 +33,8 @@
   it will stop on that hash and change nothing. Refresh the folder from iCloud first, or
   use the tunnel.
 
-    over the tunnel        powershell -ExecutionPolicy Bypass -File UPDATE-3.ps1
-    from the T7, offline   powershell -ExecutionPolicy Bypass -File UPDATE-3.ps1 -FromFolder "D:\MTP-SHOW-KIT\5 Update 2 - prompt, hard delete, hold screen"
+    over the tunnel        powershell -ExecutionPolicy Bypass -File UPDATE-4.ps1
+    from the T7, offline   powershell -ExecutionPolicy Bypass -File UPDATE-4.ps1 -FromFolder "D:\MTP-SHOW-KIT\5 Update 2 - prompt, hard delete, hold screen"
 
   What it changes and why:
 
@@ -96,7 +112,7 @@ $Files = @(
   @{ Name = "prompt.js";       Url = "prompt.js";                 Dest = "providers\prompt.js";                       Sha = "7AE305BF479B7960E606DA6BAAB2A52171DE322B67B55E80CB2D6393CCBD8DE7" },
   @{ Name = "tavus provider";  Url = "tavus-provider.js";         Dest = "providers\tavus.js";                        Sha = "744F40CFA0ADDA599DFCC719C5E3E5DF55556B9CBB6AF9AD4C466B366A84B651" },
   @{ Name = "server.js";       Url = "server.js";                 Dest = "server.js";                                 Sha = "6AAD4243CE078D8166C4FD7EF69ACDECAC9C3E35EF7F33A26C375B61C139208C" },
-  @{ Name = "stand page";      Url = "app.js";                    Dest = "public\app.js";                             Sha = "F2C256A2724651770BA48E386A62379AC6BAE743CB87717A43283548CF319D7C" },
+  @{ Name = "stand page";      Url = "app.js";                    Dest = "public\app.js";                             Sha = "07F56BA37503F108AC61D57F0AE4389CBFB6580BFAD94195E57FDE1A3E7102EA" },
   @{ Name = "hold screen";     Url = "hold.mp4";                  Dest = "public\idle\hold.mp4";                      Sha = "1876E7594FD4A1374D286DFDF933D81C5912572160E2D97F90BA56DF439D4DBA" },
   @{ Name = "control page";    Url = "control-index.txt";         Dest = "public\control\index.html";                 Sha = "ED81B677C77CBEE6A314D3171887BFA345023239735DFC818743FE69EEA8B514" },
   @{ Name = "Alcon logo";      Url = "alcon.png";                 Dest = "public\control\alcon.png";                  Sha = "ABA33D8E0900F0DC75D739FD3B205373413986F856D36AEF03897BEED93225D4" },
@@ -104,7 +120,7 @@ $Files = @(
   @{ Name = "delete-check";    Url = "tavus-delete-check.js";     Dest = "tools\tavus-delete-check.js";               Sha = "267FBA073066773A040278AF119BC51843FF3EF7B7BAC27E1BF59152D132D352" },
   @{ Name = "tavus-purge";     Url = "tavus-purge.js";            Dest = "tools\tavus-purge.js";                      Sha = "D4C320D75243E82BBFA58516967DFD42A7CA4646ED5AC1DC198690EFFF071A2B" },
   @{ Name = "CLAUDE.md";       Url = "CLAUDE-MD-SHOW-PC.md";      Dest = "CLAUDE.md";                                 Sha = "8E3B26E4AA68FD4F93667F5BEED055B8ABA287C0296D8DEF88312670D75153FA" },
-  @{ Name = "Auckland brief";  Url = "CLAUDE-BRIEF-AUCKLAND.md";  Dest = "deploy\CLAUDE-BRIEF-AUCKLAND.md";           Sha = "3D0AE9B217F4619C32EEFECC4B7484B23774090A2CE69532D3BD8CD19714F102" }
+  @{ Name = "Auckland brief";  Url = "CLAUDE-BRIEF-AUCKLAND.md";  Dest = "deploy\CLAUDE-BRIEF-AUCKLAND.md";           Sha = "2465B47604EFA78A8DD1A9F65C396817CA07013F3B3230989BF071283AFD0CA3" }
 )
 
 function Say  ($m) { Write-Host ("   " + $m) }

@@ -152,6 +152,8 @@ function clearStage() {
   // The keyed canvas is WebGL, so hiding it is what blanks it. Sit on Alcon blue
   // meanwhile, rather than letting the stage flash black while the stream arrives.
   document.body.classList.remove("keyed");
+  $("#video").removeAttribute("style");
+  $("#keyed").removeAttribute("style");
   const q = new URLSearchParams(location.search);
   $("#stage").style.background = q.get("bg") || config.background || "#003595";
 }
@@ -337,6 +339,111 @@ function initStand() {
   setStandState("idle");
 }
 
+// ---------------------------------------------------------------------------
+// Portrait framing. Measured 5 Nov 2026, not guessed.
+//
+// The Tavus feed is 1280x720 and their conversation API has no aspect or
+// resolution setting, so on the stand's 1080x1920 portrait screen
+// object-fit:cover has to scale it 2.67x to fill the height and shows only
+// 31.6% of the frame's WIDTH. Each patient's head is 20-36% of the frame wide,
+// so cover puts a head on the screen edge to edge; and Margaret, whose head
+// centre sits at 61% across instead of the middle, loses the right side of her
+// face off the edge entirely.
+//
+// FACE_X is each patient's head centre as a fraction across the frame,
+// measured off the Tavus upload crops in public/idle/ - the exact files Tavus
+// renders from, so the live render matches by construction.
+const FACE_X = { peter: 0.542, margaret: 0.614, rami: 0.489 };
+
+// How much of the stage HEIGHT the patient's frame fills, as a fraction. 1.0
+// would stand the full 720 lines up the whole screen. 0.675 is the default and
+// puts her head at roughly 1.6x life size on a 55". Expressed against the stage
+// rather than in pixels so Windows display scaling cannot change it.
+const FILL_DEFAULT = 0.675;
+const FRAME_W = 1280, FRAME_H = 720;
+
+// Modes:
+//   zoom  (default) draw the WHOLE frame at FILL of the stage height, bottom
+//         edge on the stage bottom so the frame's hard cut across the chest
+//         runs off screen, and the patient's face centred horizontally. What
+//         sits around it is the same #003595 the chroma key composites onto, so
+//         there is no visible letterbox - it reads as headroom.
+//   nudge keep object-fit:cover and only slide the crop window across with
+//         object-position. Fixes the cut-off face, leaves the head about 3x
+//         life size. The small, safe fallback.
+//   off   touch nothing.
+//
+// Tuning at the stand without a rebuild - edit the kiosk URL in show-start.ps1:
+//   ?framing=zoom|nudge|off    ?fill=0.675    ?ox=0.614
+//
+// Landscape stages are left alone, so the Mac and Alcon's demo link are
+// untouched. Without the chroma key there is no blue to sit in, so zoom falls
+// back to nudge.
+//
+// Every property is set with priority "important" on purpose: index.html
+// carries `body.live.consulting #video, #keyed { object-fit:cover !important }`
+// and a plain inline style LOSES to a stylesheet !important. That is why the
+// older ?fit= flag never did anything at the stand.
+function framingFor(p) {
+  const q = new URLSearchParams(location.search);
+  const keyOn = q.get("key") ? q.get("key") !== "0" : config.chroma;
+  let mode = q.get("framing") || "zoom";
+  if (mode === "zoom" && !keyOn) mode = "nudge";
+  const n = (k, d) => (q.get(k) != null && !isNaN(parseFloat(q.get(k))) ? parseFloat(q.get(k)) : d);
+  return {
+    mode,
+    faceX: Math.max(0, Math.min(1, n("ox", FACE_X[p && p.id] != null ? FACE_X[p.id] : 0.5))),
+    fill: Math.max(0.1, Math.min(3, n("fill", FILL_DEFAULT))),
+  };
+}
+
+function applyFraming(p) {
+  const stage = $("#stage");
+  const els = [$("#video"), $("#keyed")];
+  els.forEach((el) => el.removeAttribute("style"));
+  const { mode, faceX, fill } = framingFor(p);
+  if (mode === "off") return;
+  const w = stage.clientWidth, h = stage.clientHeight;
+  if (!w || !h || h <= w) return; // landscape or not laid out yet: leave it alone
+
+  if (mode === "nudge") {
+    // Centre the cover crop window on this patient's face.
+    const visible = (w / h) * (FRAME_H / FRAME_W); // share of the frame width on screen
+    const over = 1 - visible;
+    const x = over > 0.001 ? (faceX - visible / 2) / over : 0.5;
+    const pct = (Math.max(0, Math.min(1, x)) * 100).toFixed(1);
+    els.forEach((el) => {
+      el.style.setProperty("object-fit", "cover", "important");
+      el.style.setProperty("object-position", pct + "% center", "important");
+    });
+    return;
+  }
+
+  // zoom. Element height is a share of the stage; width follows the 16:9
+  // intrinsic ratio. left:50% plus a translate of -faceX of the element's own
+  // width puts the patient's face dead centre.
+  els.forEach((el) => {
+    el.style.setProperty("position", "absolute", "important");
+    el.style.setProperty("inset", "auto", "important");
+    el.style.setProperty("bottom", "0", "important");
+    el.style.setProperty("left", "50%", "important");
+    el.style.setProperty("height", (fill * 100).toFixed(2) + "%", "important");
+    el.style.setProperty("width", "auto", "important");
+    el.style.setProperty("object-fit", "fill", "important");
+    el.style.setProperty("transform", "translateX(-" + (faceX * 100).toFixed(2) + "%)", "important");
+  });
+}
+
+// Exposed the same way window.__chroma is, so the framing can be tried on the real
+// screen without a rebuild: __framing({ id: "margaret" }) after changing ?fill= or ?ox=.
+// It only moves pixels - unlike window.mtp it cannot touch the consult.
+window.__framing = applyFraming;
+
+// A rotated screen, a kiosk coming up, or someone dragging the window: re-run it.
+window.addEventListener("resize", () => {
+  if (state.persona && !$("#stage").classList.contains("hidden")) applyFraming(state.persona);
+});
+
 // A facial emotion held for the whole consult, per patient (Tavus conversation.set_emotion).
 // Margaret's training footage has her smiling oddly and moving while she listens, and
 // "neutral" is meant to hold her still. Deliberately empty until Jono OKs the A/B test of
@@ -357,6 +464,7 @@ async function start(p) {
   if (chroma) { chroma.stop(); chroma = null; }
   document.body.classList.remove("keyed");
   clearStage();
+  applyFraming(p);
   renderFile(p);
   $("#pick").classList.add("hidden");
   $("#stage").classList.remove("hidden");
@@ -403,7 +511,10 @@ async function start(p) {
     state.av = await adapter.start({ token: tokenRes.session_token, session: tokenRes, videoEl: $("#video"), micId, on, emotion: state.emotion });
     // TEST mode only: a handle for driving a consult without a microphone, for example
     // mtp.av.respond("...") to put words in the surgeon's mouth. Never exposed in LIVE.
-    if (config.displayMode === "test") window.mtp = state;
+    // It also needs ?mtp=1 now, because the Mac's demo link runs in TEST mode and is
+    // public: test mode alone would hand anyone with the URL a way to speak as the
+    // surgeon. The stand is LIVE, so this is off there either way.
+    if (config.displayMode === "test" && new URLSearchParams(location.search).get("mtp") === "1") window.mtp = state;
     startBackground();
     setTimeout(initRecorder, 1500);
     $("#btn-mute").textContent = "Mute";
@@ -455,7 +566,9 @@ function startBackground() {
     // side, instead of cropping into the face.
     const bg = q.get("bg") || config.background || "#003595";
     $("#stage").style.background = bg;
-    $("#keyed").style.objectFit = q.get("fit") || "cover";
+    // The keyed canvas has only just appeared, so frame it now. This used to set
+    // object-fit inline without !important, which the live stylesheet beat.
+    applyFraming(state.persona);
     window.__chroma = chroma;
   } catch (e) {
     console.warn("chroma key unavailable, showing the raw stream", e);

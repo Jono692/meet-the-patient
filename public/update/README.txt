@@ -1,9 +1,29 @@
-MEET THE PATIENT - UPDATE 3
-Prepared on the Mac mini, 4 Nov 2026. Everything here is verified against SHA256SUMS.txt
+MEET THE PATIENT - UPDATE 4
+Prepared on the Mac mini, 5 Nov 2026. Everything here is verified against SHA256SUMS.txt
 and was checked byte-for-byte through the tunnel the same way the PCs will fetch it.
 
-UPDATE 3 REPLACES UPDATE 2. DO NOT RUN UPDATE-2.ps1.
-Same thirteen files, same steps. Two differences:
+UPDATE 4 REPLACES UPDATE 3, WHICH REPLACED UPDATE 2. RUN UPDATE-4.ps1 AND NOTHING ELSE.
+UPDATE-3.ps1 and UPDATE-2.ps1 have been withdrawn from this folder on purpose.
+
+ONE file differs from UPDATE 3: public\app.js.
+
+  public\app.js         PORTRAIT FRAMING. The Tavus feed is 1280x720 landscape and their
+                        API has no aspect setting, so object-fit:cover on the stand's
+                        1080x1920 screen showed only 31.6% of the frame's width: a head
+                        edge to edge, and for Margaret, whose head centre sits at 61.4%
+                        across instead of the middle, the right of her face off the edge.
+                        Head centres measured 5 Nov off the Tavus upload crops - Peter
+                        .542, Margaret .614, Rami .489. The page now draws the whole frame
+                        at 67.5% of the screen height, sat on the bottom edge, face
+                        centred, with the chroma key's own #003595 around it. Landscape
+                        screens are untouched, so the Mac and Alcon's demo link do not
+                        change. Fallbacks live on the kiosk URL and need no rebuild:
+                        ?framing=nudge, ?framing=off, ?fill=, ?ox=.
+
+If UPDATE-3 has already been run on a PC, run UPDATE-4 over the top of it. Same install,
+idempotent: it replaces app.js and re-verifies the other twelve.
+
+CARRIED OVER FROM UPDATE 3. Two differences from UPDATE 2:
 
   personas.json         Caleb Bartolo's changes of 4 November, after he tested Margaret
                         and Rami. Margaret and Rami now name the cataract diagnosis when
@@ -24,7 +44,7 @@ Same thirteen files, same steps. Two differences:
                         personas.json - but the push was doing nothing.
 
 If you are holding the T7's "5 Update 2" folder, its personas.json is the OLD one. Running
-UPDATE-3.ps1 with -FromFolder against it will stop on that hash and change nothing, which
+UPDATE-4.ps1 with -FromFolder against it will stop on that hash and change nothing, which
 is the check working. Refresh the folder from iCloud first, or use the tunnel.
 
 WHAT IT CHANGES

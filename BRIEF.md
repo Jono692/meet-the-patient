@@ -2170,3 +2170,83 @@ the phone, or a close. Worth knowing that `KEY_END` is PageUp on the Logitech R4
 press of the back button ends a consult cleanly and silently, with the 1.5 s debounce the only
 guard. If a surgeon's consult dies at the stand for no apparent reason, that is the first thing
 to suspect.
+
+### 5 Nov 2026, evening — portrait framing built and verified; UPDATE-4 staged
+
+**Job 2 is done in code.** Jono asked how Margaret would be fixed, then chose "ship both, zoom as
+default". What follows was measured, not estimated.
+
+**What was actually wrong, and it was not only Margaret.** The Tavus feed is **1280×720 landscape**
+and `POST /v2/conversations` has no aspect or resolution property — checked `providers/tavus.js`
+against the API, there is nothing to set. On the stand's 1080×1920 screen `object-fit: cover` has
+to scale that 2.67× to fill the height, which shows only **31.6% of the frame's width**. Every
+patient's head is a similar share of the frame wide, so cover puts a head on the screen edge to
+edge. That is inherent to a 16:9 feed on a portrait screen and it hits all three.
+
+Margaret is the one that reads as broken because her head also sits off-centre. Head centres
+measured off the Tavus upload crops in `public/idle/` — the exact files Tavus renders from:
+
+| Patient | Head centre |
+|---|---|
+| Rami | 48.9% |
+| Peter | 54.2% |
+| Margaret | 61.4% |
+
+The brief's earlier "about 62%" was right. At the default crop the screen shows 34%–66% across,
+so Margaret's face runs off the right edge.
+
+**The fix, in `src/client.js` only** (builds into `public/app.js`, already in the update set, so
+one file and one hash; `public/index.html` is not pushed and was not touched):
+
+- **zoom**, the default. Draws the whole frame at 67.5% of the stage height, bottom edge on the
+  stage bottom so the frame's hard cut across the chest runs off screen, face centred horizontally.
+- **nudge**. Keeps cover and only slides the crop with `object-position`. The safe fallback.
+- **Landscape stages get no inline styles at all**, so the Mac and Alcon's demo link are untouched.
+  Without the chroma key zoom falls back to nudge on its own.
+- Knobs on the kiosk URL, no rebuild: `?framing=zoom|nudge|off`, `?fill=`, `?ox=`. Plus
+  `window.__framing(p)` in the console, exposed like `window.__chroma`.
+
+**Verified in the real page at 1080×1920**, not in a mockup: video box 2304×1296, left −875, bottom
+exactly 1920, face centre on screen 540 of 1080 — dead centre. Nudge computed 66.7% for Margaret,
+matching the arithmetic. Landscape: no inline style, `object-fit: cover`, `object-position: 50% 50%`.
+
+**Every property is set with priority `important` on purpose.** `index.html` carries
+`body.live.consulting #video, #keyed { object-fit: cover !important }`, and a plain inline style
+loses to a stylesheet `!important`. **This also means the older `?fit=` flag has never done
+anything at the stand** — it was set inline without priority. That line is gone; `applyFraming`
+owns `object-fit` now.
+
+**The seam question, settled.** A WebGL canvas painted `#003595` and a CSS background of `#003595`
+render **identically — (0,53,149) on both sides of the join**, measured off a screenshot. So the
+blue around the zoomed frame is invisible. The seam visible in the first test was the *video file's*
+own blue (`#003392` after encoding), which only appears with the chroma key off — already gated.
+
+**Something I did and had to repair.** Running `npm run build` overwrote the Mac's `public/app.js`,
+which earlier sessions had deliberately left alone so Alcon's demo link kept behaving as they had
+been using it. It is gitignored, so the old bundle is not recoverable. Consequences: the Mac and the
+show PCs now run the **same** bundle, and the Mac is `DISPLAY_MODE=test`, which exposed
+`window.mtp` — the handle that can put words in the surgeon's mouth — on a public URL. **Fixed by
+gating it behind `?mtp=1` as well as test mode.** The stand is LIVE so it was never exposed there.
+Unknown and unrecoverable: whether the old Mac bundle predated the F5 swallow, so Alcon's demo link
+may now ignore F5 where it previously reloaded.
+
+**UPDATE-4 staged and withdrawn UPDATE-3.** Thirteen files, all pins regenerated from the bytes on
+disk, nothing typed. Only two files differ from UPDATE-3: `app.js` and `CLAUDE-BRIEF-AUCKLAND.md`.
+The other eleven were verified byte-identical to UPDATE-3's pins before anything was touched.
+Idempotent over a PC that already has UPDATE-3.
+
+    UPDATE-4.ps1              8929ea4125dca8dc6fb7301d81477e082658ecbb379519f2eac4c3fedf501bb6
+    app.js                    07f56ba37503f108ac61d57f0ae4389cbfb6580bfad94195e57fde1a3e7102ea
+    CLAUDE-BRIEF-AUCKLAND.md  2465b47604efa78a8dd1a9f65c396817ca07013f3b3230989bf071283afd0ca3
+
+Verified three ways: pins in the script == bytes on disk == bytes through the tunnel with a fresh
+`?v=`. `UPDATE-3.ps1` now 404s through the tunnel. **Caution: Cloudflare caches `/update` for four
+hours, so a PC that fetched `UPDATE-3.ps1` earlier may still get it from cache. Fetch with a unique
+`?v=`.**
+
+**Still open, unchanged:** first-word latency 3.3–4.7 s is the biggest experience risk and nothing
+has been done about it; the four leftover Tavus conversations from 3 Nov need `node
+tools/tavus-purge.js --delete` on the Mac, a human click; Caleb's 4 Nov transcripts are still on the
+Mac's disk and need a keep-or-delete call; the unsent Gmail draft to Caleb awaits his send;
+`SESSION_BUDGET` still resets on restart. `TRANSCRIPTS_CUTOFF=2026-11-06` means the Mac stops
+keeping transcripts from tomorrow regardless of `KEEP_TRANSCRIPTS=true`.

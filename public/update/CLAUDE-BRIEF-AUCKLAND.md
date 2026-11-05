@@ -69,11 +69,16 @@ The host drives **both** rooms from a web page on their phone: `https://room-a.m
 
 ---
 
-## JOB 1 — run UPDATE-3 on both PCs (prepared and verified, not yet applied)
+## JOB 1 — run UPDATE-4 on both PCs (prepared and verified, not yet applied)
 
-**UPDATE-3 replaces UPDATE-2. Do not run UPDATE-2.** Same thirteen files, same steps, but
-`personas.json` now carries Caleb Bartolo's 4 November changes and the prompt push happens
-before the restart instead of after. If you run UPDATE-2 you install the pre-Caleb prompt.
+**UPDATE-4 replaces UPDATE-3, which replaced UPDATE-2. Run UPDATE-4 and nothing else.** Same
+thirteen files, same steps. Against UPDATE-3 the only file that changed is `public\app.js`,
+which now carries the portrait framing described in Job 2. `personas.json` still carries Caleb
+Bartolo's 4 November changes and the prompt push still happens before the restart. If you run an
+older script you install the pre-Caleb prompt, the unframed stand page, or both.
+
+**If UPDATE-3 has already been run on a PC, run UPDATE-4 over the top of it.** It is the same
+install, it is idempotent, and it will simply replace `app.js` and re-verify the other twelve.
 
 **Use the tunnel route below, not the T7.** The `5 Update 2` folder on the T7 still holds the
 old `personas.json`, so UPDATE-3 run with `-FromFolder` against it will fail its hash check and
@@ -198,17 +203,67 @@ irrevocable, so ask Jono first.
 
 ---
 
-## JOB 2 — Margaret is framed off-centre (not started)
+## JOB 2 — portrait framing (built and verified 5 Nov, ships inside UPDATE-4)
 
-On the portrait screen about half of Margaret's face is cut off on the right. Peter and Rami are
-fine. Nobody saw it earlier because the screens were not rotated. It affects her **live** consults,
-not just an idle clip, because Tavus renders her from the same off-centre footage.
+**This is done in code. Your job is to look at it on the rotated screen and, if it is out, turn
+one dial. Do not start writing CSS.**
 
-The low-risk fix is a CSS nudge on the stand page — shift her video sideways so her face centres.
-Her frame has spare picture to the right, so nothing is lost and it is one line to undo.
-**Measured on the Mac: her face centre sits at about 62% across the 1280×720 frame.**
-Do this on one PC, look at it on the rotated screen, then match the other. Retraining her face is
-the other option and is **not** something to start days before a show.
+### What was actually wrong
+
+The Tavus feed is **1280×720 landscape** and their conversation API has no aspect or resolution
+setting, so there is no way to ask for a portrait render. On a 1080×1920 screen `object-fit:cover`
+has to scale that 2.67× to fill the height, which shows only **31.6% of the frame's width**. Every
+patient's head is a similar share of the frame wide, so cover puts a head on the screen edge to
+edge. That part is not a Margaret fault and it hits all three.
+
+Margaret is the one that looks broken because her head also sits off-centre. Measured 5 Nov off
+the Tavus upload crops in `public\idle\` — the exact files Tavus renders from, so the live render
+matches by construction:
+
+| Patient  | Head centre across the frame |
+|----------|------------------------------|
+| Rami     | 48.9% (centred)              |
+| Peter    | 54.2% (slightly right)       |
+| Margaret | 61.4% (the outlier)          |
+
+At the default crop you see from 34% to 66% across, so Margaret's face runs off the right edge.
+
+### What UPDATE-4 does about it
+
+`public\app.js` now frames each patient by those numbers. Two modes:
+
+- **zoom** (the default) draws the whole frame at 67.5% of the screen height, sat on the bottom
+  edge so the frame's hard cut across the chest runs off screen, with the patient's face centred.
+  What sits around it is the same `#003595` the chroma key composites onto. Verified on 5 Nov that
+  a WebGL canvas and a CSS background of that hex render **identically, (0,53,149) either side of
+  the join**, so there is no visible letterbox — it reads as headroom.
+- **nudge** keeps the old full-bleed crop and only slides it sideways so the face centres. Fixes
+  the cut-off face, leaves the head about three times life size. This is the safe fallback.
+
+**Landscape screens are left completely alone** — no inline styles at all — so the Mac and Alcon's
+demo link are untouched. Without the chroma key there is no blue to sit in, so zoom falls back to
+nudge on its own.
+
+### Turning the dials, without a rebuild
+
+Add query parameters to the kiosk URL in `show-start.ps1`, then reboot:
+
+    ?framing=zoom       the default, you do not need to pass it
+    ?framing=nudge      fall back to the full-bleed crop
+    ?framing=off        touch nothing, exactly as the stand behaved before UPDATE-4
+    ?fill=0.675         share of the screen height the frame fills. Lower is smaller.
+    ?ox=0.614           override the face centre for whoever is on screen
+
+**If the framing looks wrong at the stand, the first thing to try is `?framing=nudge`.** It is the
+known-good behaviour plus the sideways shift, and it cannot letterbox.
+
+There is also `window.__framing(p)` in the browser console, the same way `window.__chroma` is
+exposed, so the numbers can be tried live without a reboot. It only moves pixels; unlike
+`window.mtp` it cannot touch the consult.
+
+### Retraining her face
+
+Still the other option, and still **not** something to start days before a show.
 
 ---
 
