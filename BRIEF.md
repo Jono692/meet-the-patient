@@ -2304,3 +2304,49 @@ there is nothing above it.
 
 **Not fixable at the stand, and the runbook says so plainly:** first-word latency (3.3–4.7 s), and
 turn patience, which is already at its documented maximum.
+
+### 6 Nov 2026 — Claude Code (Mac mini, Melbourne) — screens are portrait, and a mount-height finding
+
+Jono sent photos from the stand. Both rooms built, both 55" screens rotated to PORTRAIT and
+mounted. Rooms are enclosed with doors. UPDATE-4's portrait framing is now the live build,
+not a contingency.
+
+**Fixed a landmine in public/update/README.txt.** Its top had been rewritten for UPDATE-4 but
+both of its actual run commands still fetched UPDATE-3.ps1, which was withdrawn on 5 Nov and
+now 404s, and the tunnel one-liner still pinned UPDATE-3's hash. Anyone following the README
+at the stand would have got a 404 or a Cloudflare-cached error page wearing a .ps1 name. Both
+commands now name UPDATE-4.ps1, pinned to 8929EA41...F501BB6 taken from the bytes on disk.
+The footer also still said the Margaret reframe was "not in here"; it is. SHA256SUMS.txt
+regenerated. Verified three ways: shasum -c locally, shasum -c in the iCloud copy, and a
+fresh tunnel fetch matching byte for byte. The UPDATE-4.ps1 script itself was always correct.
+
+Tunnel checked this morning: UPDATE-4.ps1 serves 200 at the right hash, UPDATE-3.ps1 404s as
+intended, /api/config 200.
+
+**Measured where the patient's eyes will actually land.** Off the three real 1280x720 feed
+captures in media/emotion-test (Margaret, chroma on). Crown of head 0.167 down the frame,
+eye line 0.382 down, head 0.458 of frame height. Our framing is BOTTOM-ANCHORED at
+fill x screen height, so on a 55" portrait screen (1.218 m tall):
+
+    eye height above the screen's bottom edge = 0.618 x fill x 1.218 m
+
+    fill 0.675 (default)   0.51 m above the bottom edge, head approx 1.6x life size
+    fill 0.60              0.45 m
+    fill 0.55              0.41 m, head approx 1.3x life size
+    fill 0.85              0.64 m, head approx 2.1x life size
+
+So: eye height off the floor = (height of the screen's bottom edge) + 0.51 m at default.
+A seated surgeon's eyes are about 1.20 m, a standing one's about 1.60 m. That wants the
+screen's bottom edge at roughly 0.70 m for seated, 1.10 m for standing.
+
+**The important part: there is no knob that lowers her without also shrinking her.** The video
+is anchored to the bottom edge, so fill moves size and height together. If the screens are
+mounted too high for a seated surgeon, the fix is physical - lower the screen or raise the
+seating - and it has to happen while the riggers are on site. Flagged to Jono 6 Nov.
+
+Horizontal re-measured off the live feed: Margaret's head centre reads 0.624, against the
+0.614 we shipped. A 1% difference, about 23 px on a 1080-wide screen, roughly 7% of her head
+width. Not worth a Tier 4 rebuild. Leaving it.
+
+Still open: UPDATE-4 to be run on both PCs; the TAVUS_INTERRUPTIBILITY high-to-low A/B; four
+3 Nov test conversations to purge; Caleb's 4 Nov transcripts to keep or delete.
