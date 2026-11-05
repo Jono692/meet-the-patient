@@ -84,12 +84,12 @@ HOW TO APPLY IT
   Over the tunnel, while the Mac is up - one line in PowerShell as Administrator. This
   checks the script's own fingerprint and refuses to run it if it does not match:
 
-    $ErrorActionPreference="Stop";[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$f="$env:TEMP\UPDATE-3.ps1";iwr "https://demo.meetthepatient.com.au/update/UPDATE-3.ps1?v=$(Get-Random)" -OutFile $f -UseBasicParsing -Headers @{Accept="*/*"};if((Get-FileHash $f -Algorithm SHA256).Hash -ne "88620627073215F3BFDD2C4E5F6F88BC0952BC4FE868E20273A3CA67E2053488"){throw "UPDATE-3.ps1 does not match. Nothing has been run."};powershell -ExecutionPolicy Bypass -File $f
+    $ErrorActionPreference="Stop";[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$f="$env:TEMP\UPDATE-4.ps1";iwr "https://demo.meetthepatient.com.au/update/UPDATE-4.ps1?v=$(Get-Random)" -OutFile $f -UseBasicParsing -Headers @{Accept="*/*"};if((Get-FileHash $f -Algorithm SHA256).Hash -ne "8929EA4125DCA8DC6FB7301D81477E082658ECBB379519F2EAC4C3FEDF501BB6"){throw "UPDATE-4.ps1 does not match. Nothing has been run."};powershell -ExecutionPolicy Bypass -File $f
 
   From this folder on the T7, with no internet - same script, local files. Only after the
   folder has been refreshed with the new personas.json and brief:
 
-    powershell -ExecutionPolicy Bypass -File "<this folder>\UPDATE-3.ps1" -FromFolder "<this folder>"
+    powershell -ExecutionPolicy Bypass -File "<this folder>\UPDATE-4.ps1" -FromFolder "<this folder>"
 
   The -FromFolder route needs no fingerprint typed in by hand: the script checks all
   thirteen files against their own SHA-256 as it copies them. Either way it finds and runs
@@ -104,5 +104,7 @@ and F5 is swallowed by the app, so the hold screen will not appear until it relo
 THE ?v= ON THAT URL MATTERS. Cloudflare caches this folder for four hours, 404s included,
 so without it a PC can be handed a stale answer or an error page wearing a .js name.
 
-NOT IN HERE: the Margaret reframe (Job 2). Still to do, on the PCs, by eye on the rotated
-screen. See 4 Docs\CLAUDE-BRIEF-AUCKLAND.md.
+JOB 2, THE MARGARET REFRAME, IS IN HERE. It was outstanding under UPDATE 3 and is not
+outstanding any more - it is the app.js in this folder. What is left at the stand is to
+look at her on the rotated screen and, only if she needs it, reach for ?fill= or ?ox= on
+the kiosk URL. See JOB 2 in CLAUDE-BRIEF-AUCKLAND.md and deploy\TUNING-RUNBOOK.md.
