@@ -2250,3 +2250,13 @@ tools/tavus-purge.js --delete` on the Mac, a human click; Caleb's 4 Nov transcri
 Mac's disk and need a keep-or-delete call; the unsent Gmail draft to Caleb awaits his send;
 `SESSION_BUDGET` still resets on restart. `TRANSCRIPTS_CUTOFF=2026-11-06` means the Mac stops
 keeping transcripts from tomorrow regardless of `KEEP_TRANSCRIPTS=true`.
+
+**Second route for UPDATE-4, added 5 Nov.** The show PCs fetching from the tunnel means they
+depend on the Mac mini staying up in Melbourne while Jono installs in Auckland. All fifteen files
+are now also in iCloud at **`MTP-UPDATE-4/`**, flat, verified against `SHA256SUMS.txt`. The script
+takes `-FromFolder` and joins the folder path to the bare filenames, so that folder works as is:
+
+    powershell -ExecutionPolicy Bypass -File UPDATE-4.ps1 -FromFolder "<path to MTP-UPDATE-4>"
+
+This is the route to use if the tunnel or the Mac is unavailable. It is **not** the T7's
+"5 Update 2" folder, which still holds the old `personas.json` and will fail its hash check.
