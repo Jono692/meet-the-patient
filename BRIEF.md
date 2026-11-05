@@ -2120,3 +2120,53 @@ there, still a human click.
 Cosmetic: around thirty "Alcon patient" PALs on the account now, including duplicates from the
 repeated pushes. Two extra pairs (21:55 and 22:39 UTC, Margaret and Rami only) are not fully
 accounted for. They cost nothing and all carry the new prompt.
+
+**5 Nov — Caleb's four test consults read back, and what they tell us.** All four were on the
+demo link on 4 Nov between 14:40 and 15:01 Melbourne time, before the prompt changes went in.
+Margaret 7 minutes and 40 turns, Rami twice (4:50 and 4:34), Peter 11 seconds and abandoned. All
+four were hard deleted from Tavus; the transcripts on the Mac are the only record.
+
+**It works.** Caleb took a full history off Margaret without help: she gave her whole glasses
+script and both reading adds when asked, her hobbies when asked about hobbies, and refused to
+rank her vision priorities exactly as written. Rami gave the eighty per cent screens figure only
+once asked about work, turned down the trifocal on night driving, then accepted the EDOF when
+Caleb reframed it around the computer. That exchange is the activation doing its job. The reveal
+card fired on "the best lens option for you would be the EDOF" and matched his target lens.
+No patient named a lens, a brand or a product at any point.
+
+**Faults worth acting on, in order:**
+
+- **First word takes 3.3 to 4.7 seconds.** Twenty measurements across all sessions: median about
+  4.0 s, with outliers at 6.4 s, 7.9 s and one at 37 s. A surgeon standing in front of a silent
+  screen for four seconds will think it has not started. This is the biggest experience risk left
+  and nothing has been done about it.
+- **The opening line was mangled by speech-to-text.** Caleb's first words came through as
+  "He's the crown. What would it be? I'm not great. What brings you in today?" Margaret handled
+  it gracefully and asked what he meant. Worth watching the mic position at the stand.
+- **Rami was called "Michael".** Alcon's own profile document calls him Michael Wong; the avatar
+  is Rami George. Caleb used Michael and Rami corrected him in character, which worked. Surgeons
+  reading Alcon's materials will do the same.
+- **Margaret's partner and husband.** Her story says she "lives with her partner" and also
+  "collect her husband from golf", and she used husband on the call. Our file, not Caleb's error.
+- **Margaret reports her neighbour's outcome.** "She doesn't need glasses at all now, and that's
+  the dream." She names no lens, so the guardrail holds as written, but it is a patient voicing a
+  result. It comes straight from Alcon's own profile. Flagged for a decision, not changed.
+
+Rami's "some mild visual field loss" appears in the 4 Nov transcript, which is the exact exchange
+that produced Caleb's email. Already fixed.
+
+**5 Nov — the hold screen is not too big, the screen is the wrong way round.** Jono saw her head
+filling a landscape screen in the hotel. `hold.mp4` is 1080x1920, cut from a 4096x2160 Adobe Stock
+source, and `#idle` uses `object-fit: cover`. On a 1920x1080 landscape viewport, cover scales it
+1.78x to fill the width and shows only 32% of the clip's height — a band across her face. On a
+1080x1920 portrait viewport it is a 1.00x fit, 100% of width and height, which is the framing that
+was approved on 3 Nov. Reproduced both ways from a local copy, screenshots sent. **Nothing to
+change; it comes right when the screens are rotated.**
+
+**5 Nov — room B ran one consult, 26 seconds, not 15 minutes.** Peter, 5 Nov 00:56:07 to 00:56:33
+UTC, `session-deleted` logged, `error: None`. **Both rooms have now proved the hard delete end to
+end.** But the log shows a clean end, not a crash, which means something ended it: the clicker,
+the phone, or a close. Worth knowing that `KEY_END` is PageUp on the Logitech R400 — one stray
+press of the back button ends a consult cleanly and silently, with the 1.5 s debounce the only
+guard. If a surgeon's consult dies at the stand for no apparent reason, that is the first thing
+to suspect.
