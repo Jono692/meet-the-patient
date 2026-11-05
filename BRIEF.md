@@ -2078,3 +2078,45 @@ an in-memory counter, still not fixed.
 Not done: no reply sent to Caleb. Drafted for Jono to send himself, not sent — the Polly email
 on 4 Nov went out in a register that was not his, and client mail from this session goes to him
 first from now on.
+
+**5 Nov — full check. Job 1 is done: UPDATE-3 is on both show PCs.** Verified from Melbourne,
+read-only, nothing touched.
+
+All three tunnels up. `demo` (Mac), `room-a` and `room-b` all answer in under 350 ms. Both show
+PCs are online and their apps are running: `displayMode live`, `keepTranscripts false`, chroma
+on, pin required, rotation margaret/peter/rami, and each room can see the other through
+`/api/peer/room`, so one phone drives both. Both `/control/` pages answer.
+
+**How UPDATE-3 was confirmed without being able to read the prompt.** In `live` mode
+`/api/personas` withholds the clinical file, so there is no way to read a PC's prompt over the
+wire — an earlier guess from that endpoint said "not applied" and was wrong. The Tavus PAL list
+settles it. UPDATE-3 pushes the prompt *before* restarting the app, which UPDATE-2 did not, so a
+push immediately followed by a boot is the signature of the new script:
+
+    21:34:13-17 UTC  Peter, Margaret, Rami pushed, all carrying "no visual field loss"
+    21:34:24 UTC     room B booted
+    22:32:37-41 UTC  Peter, Margaret, Rami pushed, same new prompt
+    22:32:48 UTC     room A booted
+
+Both machines, seven seconds apart each time. Every Alcon PAL created from 4 Nov onwards carries
+Caleb's wording, so whatever ran, neither PC can be serving the old prompt.
+
+**Room A has proved the hard delete end to end.** One consult on 5 Nov at 00:49 UTC, Peter,
+13 seconds, followed by `session-deleted` in its event log — an event only the new `server.js`
+writes. **Room B has not had a consult yet**, so on that machine the delete path is installed
+but unproven. One throwaway consult on B would close it.
+
+Mac: app up 15 h under `caffeinate`, cloudflared up since 29 Oct, sleep prevented, 27 GB free
+(the data volume is at 94%). All three PALs read back from Tavus matching `personas.json`.
+`/update` serves UPDATE-3 at the fingerprint its README pins, and UPDATE-2 now 404s.
+
+**Two things for Jono, neither urgent.** Caleb's test conversations from 4 Nov are on the Mac's
+disk as transcripts — the demo link runs `DISPLAY_MODE=test` with `KEEP_TRANSCRIPTS=true`, which
+is what his 29 Oct email said to expect, and `TRANSCRIPTS_CUTOFF` stops it from 6 Nov. The stand
+itself is clean and always has been. Whether those files are kept or deleted before the show is
+his call. And the four conversations left on the Tavus account from 3 Nov tool testing are still
+there, still a human click.
+
+Cosmetic: around thirty "Alcon patient" PALs on the account now, including duplicates from the
+repeated pushes. Two extra pairs (21:55 and 22:39 UTC, Margaret and Rami only) are not fully
+accounted for. They cost nothing and all carry the new prompt.
