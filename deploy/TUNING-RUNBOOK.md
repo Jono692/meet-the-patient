@@ -81,7 +81,7 @@ straight from `process.env` inside `layersFor()`, on purpose.
     TAVUS_TURN_PATIENCE        low | medium | high      we send high
     TAVUS_TURN_MODEL           sparrow-2                leave it
     TAVUS_PERCEPTION           off | raven-1 | raven-2  we send off — see below
-    TAVUS_MAX_CALL_SECONDS     seconds, we send 600
+    TAVUS_MAX_CALL_SECONDS     seconds, install.ps1 writes 420 (7 min) on the show PCs; code default 600
     TAVUS_ABSENT_TIMEOUT       seconds, default 60
 
 ### The one that matters in a loud room

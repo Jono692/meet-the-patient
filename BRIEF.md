@@ -2652,3 +2652,35 @@ and cached on the PC can be corrected server-side with a PATCH and reaches the r
 next consult, with nobody at a keyboard. That is the only tuning route that has worked at
 this venue. Worked examples in a shared prompt block must never contain any one patient's
 data.
+
+### 7 Nov 2026, 8.50am — Claude Code — first real consults, the 7-minute cap, one orphan on Tavus
+
+**Room B's first real surgeon consult: Margaret, 19:40:32–19:47:39 UTC, 428 s.** Ended with
+`session ended unexpectedly: left`, which is Tavus hanging up, not the host pressing End.
+That is the cap: `install.ps1` writes `TAVUS_MAX_CALL_SECONDS=420` into the show `.env`, so
+every consult is cut at 7:00 after the patient joins, a few seconds after the Start press.
+Yesterday's Room A Peter test ended the same way at 426 s. The number is the agreed one
+(Polly and Caleb were told 7 minutes) but it ends hard, mid-sentence, with no warning on
+screen. **Hosts need to know: 7 minutes from Start, and it stops dead.** A soft wind-down is
+an UPDATE-8 candidate. It is a per-conversation property sent from the PC's `.env`, not on
+the PAL, so it cannot be changed from Melbourne.
+
+`deploy/TUNING-RUNBOOK.md` said "we send 600"; corrected to say install.ps1 writes 420.
+
+**Hard delete is working** on every consult that ended normally today: five Room B consults
+and one Room A, each `session-deleted` within 3 s of `consult_end`. Only one consult from
+today remains on Tavus: `cc224b29157e34bf`, Margaret, Room B, started 18:39:22 UTC. Room B
+was rebooted at 18:42:14 mid-consult (the post-update reboot), so `/api/session-end` never
+ran and nothing deleted it. Tavus ended it on its own timeout; it sits there as `ended`.
+Claude Code attempted the hard delete from the Mac and the auto-mode classifier refused it
+as an irreversible deletion, which is the human-click rule working as intended. **Open: Jono
+to delete it** (`tools/tavus-purge.js --delete` on the Mac lists and clears it) or OK the
+single delete.
+
+**UPDATE-8 candidate from this:** log the `conversation_id` at `consult_start`, and on boot
+sweep any conversation whose start has no matching end. A mid-consult reboot is the one
+path that leaves a surgeon's conversation on a vendor's server.
+
+**Rotation note:** of six Room B consults today, five were Margaret. Hosts are picking her
+rather than letting the rotation run. Not a fault, but Peter and Rami have barely been
+exercised in front of a surgeon yet.
