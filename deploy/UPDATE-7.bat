@@ -1,8 +1,8 @@
 @echo off
-title Meet the Patient - Update 6
+title Meet the Patient - Update 7
 color 0B
 
-rem Double-click launcher for UPDATE-6. Does exactly what the PowerShell one-liner
+rem Double-click launcher for UPDATE-7. Does exactly what the PowerShell one-liner
 rem does: elevates, downloads the script, checks its SHA-256, and only then runs it.
 rem If the fingerprint does not match it stops and changes nothing.
 
@@ -13,12 +13,12 @@ if %errorlevel% NEQ 0 (
   exit /b
 )
 
-set "URL=https://demo.meetthepatient.com.au/update/UPDATE-6.ps1"
-set "WANT=870CA94E95DA432510A4C411285908A3D8D497AD27B166E9F54C8461470EE339"
-set "DEST=%TEMP%\UPDATE-6.ps1"
+set "URL=https://demo.meetthepatient.com.au/update/UPDATE-7.ps1"
+set "WANT=D7633BD55DA6B4C5F81C81874706C334F1D638AA2002BA2E0F3E9EF76364AF53"
+set "DEST=%TEMP%\UPDATE-7.ps1"
 
 echo.
-echo  Meet the Patient - Update 6
+echo  Meet the Patient - Update 7
 echo  ---------------------------
 echo.
 echo  Downloading...

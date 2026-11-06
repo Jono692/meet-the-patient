@@ -1,144 +1,153 @@
 MEET THE PATIENT - MORNING OF 7 NOVEMBER 2026, RANZCO, NZICC AUCKLAND
-Plan for Claude Code running ON a show PC. Written 6 Nov by Claude Code on
-the Mac in Melbourne. Jono is standing next to you and is short on time.
+For Claude Code running ON a show PC. Written 6 Nov by the Claude Code
+session on the Mac in Melbourne. Jono is beside you and is short on time.
 
-Work top to bottom. Stop and tell him if anything fails. Be brief.
+YOU CANNOT RUN COMMANDS. That is expected and the plan accounts for it.
+JONO does the one step that needs a command. You do everything else.
+Work top to bottom. Say plainly if something fails. Be brief.
 
-WHICH ROOM AM I ON
-Run this first and say which room you are:
-    type C:\meet-the-patient\.env | findstr ROOM_ID
+FIRST: say which room you are on.
+    read C:\meet-the-patient\.env and report the ROOM_ID line only.
+    Never print the API key or the control PIN.
 
 GROUND RULES
-- Do NOT run npm start. There is no npm here and the app is already running
-  on port 3000. A second copy would fight it for the port.
-- Node is deliberately not on PATH:
-      C:\meet-the-patient\node\node-v24.18.0-win-x64\node.exe
-- Never stop node by name. cloudflared and the Edge kiosk must survive.
-- Do NOT change DISPLAY_MODE or KEEP_TRANSCRIPTS. Alcon told surgeons
+- Do not edit show-start.ps1. Its kiosk URL carries ?fill=0.79, set by
+  measurement yesterday. Losing it puts the patients back too low.
+- Do not change DISPLAY_MODE or KEEP_TRANSCRIPTS. Alcon told surgeons
   nothing is recorded and that must stay true.
-- Do NOT edit show-start.ps1. Its kiosk URL carries ?fill=0.79, which was
-  set by measurement yesterday. Losing it puts the patients back too low.
-- Do NOT delete any Tavus PALs.
+- Do not delete any Tavus PALs.
+- Node is at C:\meet-the-patient\node\node-v24.18.0-win-x64\node.exe and
+  is deliberately not on PATH. There is no npm here.
 
 ----------------------------------------------------------------------
-JOB 1 - .env FIRST. THIS ORDER MATTERS.
+JOB 1 - YOU DO THIS. .env, BEFORE ANYTHING ELSE RUNS.
 ----------------------------------------------------------------------
-Open C:\meet-the-patient\.env and change:
+Open C:\meet-the-patient\.env and change the single line
+
       TAVUS_INTERRUPTIBILITY=high
-to:
+to
       TAVUS_INTERRUPTIBILITY=low
 
-Change nothing else in that file. Do not print the API key or the PIN.
+Change nothing else. Confirm to Jono when it is saved.
 
-Why: "high" means the patient stops talking the moment it hears anything
-speech-like, which on a conference floor is constantly. Tavus's own best
-practice is lower for most experiences. Last night the PALs were patched
-to low directly on Tavus, but .env still said high, and the update in JOB 2
-rebuilds PALs from .env. Editing .env first means the rebuild produces
-PALs at low and the setting becomes permanent instead of being silently
-reverted.
-
-----------------------------------------------------------------------
-JOB 2 - INSTALL UPDATE-6
-----------------------------------------------------------------------
-Easiest: in Edge go to      demo.meetthepatient.com.au/UPDATE-6.bat
-click Keep when Edge warns, double-click it, accept the admin prompt.
-
-If the .bat misbehaves, this is the proven path. Admin PowerShell:
-
-$ErrorActionPreference="Stop";[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$f="$env:TEMP\UPDATE-6.ps1";iwr "https://demo.meetthepatient.com.au/update/UPDATE-6.ps1?v=$(Get-Random)" -OutFile $f -UseBasicParsing -Headers @{Accept="*/*"};if((Get-FileHash $f -Algorithm SHA256).Hash -ne "870CA94E95DA432510A4C411285908A3D8D497AD27B166E9F54C8461470EE339"){throw "UPDATE-6.ps1 does not match. Nothing has been run."};powershell -ExecutionPolicy Bypass -File $f
-
-It runs nine numbered steps and checks the SHA-256 of all thirteen files
-before touching anything. WATCH STEP 6, the Tavus prompt push. It needs
-working internet and it reports rather than throwing, so it can fail
-quietly. If step 6 fails, say so and do NOT run the script again.
-
-What UPDATE-6 adds: the stand already polled a command channel every
-second for start, end, skip, pick, open and close. It now also accepts
-"tune" and "reload", applied live with no reload and safe mid-consult.
-That lets Melbourne change framing and chroma on a live room without
-anyone touching this PC. That is the whole point of this morning.
+Why the order matters: "high" makes the patient stop talking the instant
+it hears anything speech-like, which on a conference floor is constant.
+Last night those settings were patched directly on Tavus, but .env still
+says high, and JOB 2 rebuilds the PALs from .env. If .env is not changed
+first, JOB 2 silently puts interruptibility back to high and nothing
+tells anyone.
 
 ----------------------------------------------------------------------
-JOB 3 - REBOOT
+JOB 2 - JONO DOES THIS. You cannot. Ask him to.
 ----------------------------------------------------------------------
-The kiosk holds the old app.js in memory and F5 is deliberately swallowed.
-Nothing changes on screen until a reboot.
+Ask Jono to open Edge, go to
+
+      demo.meetthepatient.com.au/UPDATE-7.bat
+
+click Keep on the warning, double-click the file, and accept the
+administrator prompt. It checks the file's SHA-256 before running and
+stops without changing anything if it does not match.
+
+While it runs, watch for STEP 6, the Tavus prompt push. It needs working
+internet and it reports rather than failing loudly. If step 6 fails, say
+so and do NOT let it be run a second time.
+
+UPDATE-7 carries three things:
+  - the ay-scan spelling, in the file that actually ships (see JOB 3)
+  - live remote tuning, so Melbourne can change framing and chroma on a
+    running room with nobody touching this PC
+  - the phantom-patient fix at the start of a consult
 
 ----------------------------------------------------------------------
-JOB 4 - PROVE IT TOOK
+JOB 3 - WHY THE ay-scan FIX KEPT DISAPPEARING
 ----------------------------------------------------------------------
-After the reboot, report all four:
+Someone fixed "A-scan" to "ay-scan" by hand on this PC and UPDATE-5 wiped
+it. That was not a mistake by whoever did it: personas.json is pinned in
+every update and gets overwritten every time, so a local edit can never
+survive. It is now corrected in the shipped file, in all three places
+Margaret and Rami say it, so UPDATE-7 installs it rather than removing it.
+
+After the update, confirm C:\meet-the-patient\personas.json contains
+"ay-scan" and not "A-scan". If it says A-scan, the update did not take.
+
+Do not hand-edit personas.json. If more pronunciation fixes are needed,
+tell Jono and they go in the next shipped build.
+
+----------------------------------------------------------------------
+JOB 4 - REBOOT
+----------------------------------------------------------------------
+The kiosk holds the old page in memory and F5 is deliberately swallowed,
+so nothing changes on screen until a reboot. Start, Power, Restart.
+
+----------------------------------------------------------------------
+JOB 5 - PROVE IT TOOK. Report all five.
+----------------------------------------------------------------------
   1. Is the hold screen playing on the stand screen?
-  2. curl http://localhost:3000/api/room          (should name this room)
-  3. Get-Service cloudflared                      (should be Running)
-  4. Confirm .env now reads TAVUS_INTERRUPTIBILITY=low
+  2. Does .env read TAVUS_INTERRUPTIBILITY=low ?
+  3. Does personas.json contain ay-scan ?
+  4. Does show-start.ps1 still carry ?fill=0.79 ?
+  5. Did step 6 of the update pass?
 
-Melbourne will confirm the remote tuning independently. Do not try to
-test the tune command yourself.
+Melbourne will confirm the room is reachable and that remote tuning works.
+Do not try to test the tune command yourself.
 
 ----------------------------------------------------------------------
-JOB 5 - AUDIO, the Zoom PodTrak P4next
+JOB 6 - AUDIO. Zoom PodTrak P4next. From the manual, checked last night.
 ----------------------------------------------------------------------
-From the manual, checked last night:
-
-- TAKE THE BATTERIES OUT. It is 2x AA, about 3.5 hours on alkaline. The
-  manual also contradicts itself on which power source wins, and one
-  reading has it sitting on battery and ignoring USB entirely. With no
-  batteries in, that ambiguity cannot bite.
-- Power: ideally a 5V USB mains adapter or power bank (12W / 5V 2.4A or
-  better) into the DEDICATED POWER port, and the data cable to the PC.
-  That keeps the P4 alive through PC reboots. If there is no adapter,
-  the data cable alone bus-powers it and that is fine.
-- Straight into a PC USB port. NOT a hub. Zoom's own troubleshooting.
-- Set Auto Power Off to NEVER. Default is 10 hours.
-- Phantom power 48V OFF. Broadcast headsets are dynamic, they do not
-  need it, and 48V can damage gear that is not phantom-compatible.
+- TAKE THE BATTERIES OUT. 2x AA, about 3.5 hours on alkaline. The manual
+  also contradicts itself on which power source wins, and one reading has
+  it sitting on battery and ignoring USB. No batteries, no ambiguity.
+- Power: a 5V USB mains adapter or power bank (12W / 5V 2.4A or better)
+  into the DEDICATED POWER port, plus the data cable to the PC. That keeps
+  it alive through PC reboots. Data cable alone also works.
+- Straight into a PC USB port, NOT a hub. Zoom's own troubleshooting.
+- Auto Power Off to NEVER. Default is 10 hours.
+- Phantom power 48V OFF. Broadcast headsets are dynamic and do not need
+  it, and 48V can damage gear that is not phantom-compatible.
 - XLR is the MICROPHONE. 3.5mm is the HEADPHONES. Surgeon needs both.
-  The observer's headset needs headphones only.
-- In Windows Sound settings, set the P4next as BOTH default input AND
-  default output. THIS IS THE ONE THAT SILENTLY BREAKS THINGS: the stand
-  runs in live mode where the mic picker is hidden, so the app uses
-  whatever Windows calls default.
-- Turn off Windows USB selective suspend and sleep.
-- Check the USB return channel is up in the headphone mix, or the surgeon
-  will hear nothing from the patient and it will look like the app broke.
+  The observer needs headphones only.
+- In Windows Sound settings make the P4next BOTH default input AND
+  default output. THIS IS THE ONE THAT SILENTLY BREAKS THINGS: live mode
+  hides the mic picker, so the app uses whatever Windows calls default.
+  You can do this yourself in Settings.
+- Turn off USB selective suspend and sleep.
+- Check the USB return is up in the headphone mix, or the surgeon hears
+  nothing from the patient and it looks like the app has broken.
 
 ----------------------------------------------------------------------
-JOB 6 - THE TV, in this order
+JOB 7 - THE TV, in this order
 ----------------------------------------------------------------------
-The panel is a TCL running Google TV. There is no working remote: use the
-single physical button on the TV. With the TV on, a SHORT press opens an
-on-screen menu and further short presses step through the options.
+A TCL running Google TV. No working remote: use the single physical button
+on the TV. With it on, a SHORT press opens a menu and further short presses
+step through the options.
 
-  1. Rename the HDMI input this PC is on to "PC". On TCL Google TV that
-     switches the panel to full 4:4:4 colour instead of 4:2:0. This is the
-     single biggest picture improvement available and costs nothing.
+  1. Rename the HDMI input this PC is on to "PC". That switches the panel
+     to full 4:4:4 colour instead of 4:2:0. Biggest picture gain available
+     and it costs nothing.
   2. Picture mode to PC, Game or Monitor.
-  3. Turn OFF: noise reduction, MPEG noise reduction, motion smoothing
-     (action smoothing / MEMC), dynamic contrast, any "AI picture".
+  3. OFF: noise reduction, MPEG NR, motion smoothing / MEMC, dynamic
+     contrast, any "AI picture".
   4. Sharpness: try 0 and try mid, pick by eye on Margaret.
 
-Also in Windows: display scaling at 100%, resolution 1080 x 1920, and in
-Intel Graphics Command Center set output colour range to FULL, not Limited.
+In Windows: scaling 100%, resolution 1080 x 1920, and in Intel Graphics
+Command Center set output colour range to FULL, not Limited.
 
 ----------------------------------------------------------------------
-JOB 7 - THE ONLY TEST THAT PROVES ANYTHING
+JOB 8 - THE ONLY TEST THAT PROVES ANYTHING
 ----------------------------------------------------------------------
 TWO consults back to back, different patients, headsets on.
 
 The first consult after a reboot has no previous frame, so it will look
-fine no matter what. It is the START OF THE SECOND one that matters.
+fine whatever happens. It is the START OF THE SECOND one that matters.
 
-What you should see: hold loop, then straight to the right patient. No
-black bar, no stranger appearing first. If you see either, say so.
-
-What you should hear: the patient in both headsets, and she should answer
-the surgeon. If she does not respond, it is the Windows default input,
-not the app.
+Look for: hold loop, then straight to the correct patient. No black bar,
+no stranger appearing first.
+Listen for: the patient in both headsets, and that she answers. If she
+does not, it is the Windows default input, not the app.
+Also listen for: "ay-scan" when she describes her scans.
 
 ----------------------------------------------------------------------
 REPORT BACK, SHORT
 ----------------------------------------------------------------------
-Room, whether step 6 passed, whether the hold screen came back, whether
-.env reads low, and what the second consult looked and sounded like.
+Room, the five checks from JOB 5, and what the second consult looked and
+sounded like.

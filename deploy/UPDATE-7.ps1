@@ -1,28 +1,32 @@
 <#
-  Meet the Patient - update 6: live remote tuning, with no physical access.
+  Meet the Patient - update 7: everything in UPDATE-6, plus the ay-scan fix,
+  this time in the file that actually ships.
 
-  THIS REPLACES UPDATE-5. Two files differ: public\app.js and server.js.
-  Idempotent over UPDATE-5, over UPDATE-4, over UPDATE-3.
+  THIS REPLACES UPDATE-6. One file differs from UPDATE-6: personas.json.
+  Idempotent over 6, over 5, over 4.
 
-    * The stand already polled /api/room/command once a second for start, end,
-      skip, pick, open and close. It now also accepts "tune" and "reload".
+    * "A-scan" is now spelt "ay-scan" in the three places Margaret and Rami
+      say it. This is a PRONUNCIATION SPELLING, not a clinical change: the
+      text is never shown on screen in live mode, only spoken, so the only
+      thing it alters is how the patient says the word. No clinical value,
+      measurement or lens mapping has been touched.
 
-      tune carries display settings and is APPLIED LIVE - no reload, no reboot,
-      safe mid-consult. Whitelisted keys only: framing, fill, ox, sim, smooth,
-      spill, bg. Values are capped at 24 characters and must match
-      [A-Za-z0-9.#-], because they end up driving CSS on the stand screen.
+      It was fixed by hand on Room A at the stand and UPDATE-5 overwrote it,
+      because personas.json is pinned and every update replaces it. A local
+      edit cannot survive. Putting it in the shipped file is the only way it
+      stops coming back.
 
-      Overrides sit ON TOP of the kiosk URL and do NOT survive a reload. A reboot
-      always returns the room to whatever show-start.ps1 says, so there is no way
-      to leave a room in a state nobody can explain the next morning.
+    * Carried from UPDATE-6: tune and reload on the command channel, applied
+      live, so framing and chroma can be changed from the host phone or from
+      Melbourne with nobody touching the PC.
 
-    * Nothing about start, end, skip, pick, open or close changed. If the tuning
-      half ever misbehaves the worst case is that tuning does nothing.
+    * Carried from UPDATE-5: the phantom patient at the start of a consult.
 
-  Why: every change so far has needed someone physically at the PC, and the PCs
-  are between two walls with no screen or keyboard on them. Settings that were
-  only reachable by editing the kiosk URL and rebooting are now reachable from
-  the host phone or from the Mac in Melbourne.
+  NOTE FOR WHOEVER RUNS THIS: changing personas.json changes the prompt, which
+  changes the PAL signature, so step 6 will build fresh PALs at Tavus. They are
+  built from .env. If TAVUS_INTERRUPTIBILITY in .env still says "high" the new
+  PALs will be high and last night's server-side patch to low is undone with no
+  warning. CHANGE .env TO low BEFORE RUNNING THIS.
 
   AND THEN REBOOT. The kiosk holds the old app.js and F5 is swallowed.
 #>
@@ -44,7 +48,7 @@ $Tmp    = Join-Path $env:TEMP "mtp-update3-$Stamp"
 $Bust   = "$Stamp-$(Get-Random)"
 
 $Files = @(
-  @{ Name = "personas.json";   Url = "personas.json";             Dest = "personas.json";                             Sha = "32A293FBE01215674B104E41B39DD6C6FCA2BAFC910BF9897578F8CD4C1E062E" },
+  @{ Name = "personas.json";   Url = "personas.json";             Dest = "personas.json";                             Sha = "B248AD34891879CCC36AC2595CBBD86E961ABA7CA0F08150E9F142E31CADACF5" },
   @{ Name = "prompt.js";       Url = "prompt.js";                 Dest = "providers\prompt.js";                       Sha = "7AE305BF479B7960E606DA6BAAB2A52171DE322B67B55E80CB2D6393CCBD8DE7" },
   @{ Name = "tavus provider";  Url = "tavus-provider.js";         Dest = "providers\tavus.js";                        Sha = "744F40CFA0ADDA599DFCC719C5E3E5DF55556B9CBB6AF9AD4C466B366A84B651" },
   @{ Name = "server.js";       Url = "server.js";                 Dest = "server.js";                                 Sha = "69773A66A3EA144DDE8F2612A6707737357ABA2B799A40BB9B8D742241353383" },

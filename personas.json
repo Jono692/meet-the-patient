@@ -58,7 +58,7 @@
       ],
       "red_flags_for_surgeon_to_find": [
         "Very little night driving, so the usual night-vision objection carries less weight for her.",
-        "Clean workup: normal topography, A-scan and OCT, no prior refractive surgery.",
+        "Clean workup: normal topography, ay-scan and OCT, no prior refractive surgery.",
         "Expectations shaped by a neighbour's result rather than by her own measurements."
       ],
       "clinical_file": {
@@ -67,7 +67,7 @@
         "diagnosis": "Cataracts, both eyes, progressive over 12 months",
         "glasses_script": "R +1.50 sphere / -1.00 cyl at 140 degrees; L +1.75 sphere / -0.75 cyl at 80 degrees",
         "reading_adds": "+1.50 for computer, +2.25 for reading. Three pairs: distance, intermediate, near",
-        "topography_and_biometry": "Normal corneal topography and A-scan",
+        "topography_and_biometry": "Normal corneal topography and ay-scan",
         "macula": "Normal OCT",
         "family_history": "No family history of eye conditions",
         "prior_surgery": "No prior refractive surgery"
@@ -108,7 +108,7 @@
         "glaucoma": "Mild primary open-angle glaucoma diagnosed 4 years ago. No visual field loss",
         "treatment": "Xalatan drops for IOP control",
         "glasses_script": "Multifocal. R +3.25 sphere / -0.50 cyl at 73 degrees; L +3.75 sphere / -0.75 cyl at 150 degrees. ADD +2.00",
-        "topography_and_biometry": "Normal A-scan and topography",
+        "topography_and_biometry": "Normal ay-scan and topography",
         "macula": "Normal OCT",
         "family_history": "Glaucoma, paternal side"
       },
