@@ -1,0 +1,51 @@
+MEET THE PATIENT - UPDATE 8, TONIGHT 7 NOV 2026, 5PM, BOTH ROOMS
+For Jono at the keyboard. Written on the Mac in Melbourne during show day 1.
+
+WHAT IT DOES (details in demo.meetthepatient.com.au/update/README.txt)
+  - consults go from 7 minutes to 10
+  - the prompt leak (Margaret reciting Peter's scans) fixed in the shipped file, with a
+    check that refuses to push if it ever comes back
+  - a boot sweep that deletes any consult left on Tavus by a mid-consult reboot
+  - hosts pins for room-a and room-b, so each room's host page can show the other room
+  - hold.mp4 not re-downloaded; the update is ~1 MB, not 17
+  - NO REBOOT. app.js did not change. The app restarts itself.
+
+ONE ROOM AT A TIME. Do Room B first (it is the one the surgeons have been using), check
+it, then Room A.
+
+PER ROOM, THREE STEPS
+
+  1. Edge, go to:   demo.meetthepatient.com.au/UPDATE-8.bat
+     Keep on the warning, double-click it, accept the administrator prompt.
+     It downloads the script, checks its fingerprint, and only then runs it.
+
+  2. Watch for these as it runs:
+       5b  .env     before/after lines: MAX_CALL_SECONDS 600, INTERRUPTIBILITY low
+       5c  hosts    three hostnames resolve to 104.21.96.126
+       6   Tavus    "leak check passed and all three patients match personas.json"
+                    If it says REFUSED, stop and tell Melbourne. Do not run it again.
+       8   app      "room B", "display mode live", "transcripts off",
+                    "other room reachable: room A is idle"  (A is still on the old hosts
+                    file until it is updated too, so on Room B this line may fail on the
+                    first pass. It passes once both rooms are done.)
+       9   delete   "a consult is ended and hard deleted on this PC"
+
+  3. Tell Melbourne "B done". I verify it from here: reachable, config, PALs rebuilt
+     at low, remote tuning still live, the relay to the other room.
+
+Then Room A, same three steps.
+
+AFTER BOTH: open either room's control page. It should show both rooms again.
+
+IF THE .BAT SAYS "STOP. Could not download it": DNS. Run this in PowerShell as
+Administrator and try again:
+
+    Add-Content C:\Windows\System32\drivers\etc\hosts "`n104.21.96.126 demo.meetthepatient.com.au"; ipconfig /flushdns
+
+IF POWERSHELL REFUSES TO RUN THE SCRIPT AT ALL (red text before "1. Finding Node"):
+that is a syntax error in the script. Nothing has been changed. Tell Melbourne the
+first red line; it is a one-minute fix and a re-download.
+
+NOT TONIGHT: TV picture settings and the P4next audio checklist are still in
+demo.meetthepatient.com.au/tomorrow.txt, jobs 6 and 7. The one orphaned consult record
+from this morning's reboot is still on Tavus; it is a click on the Mac, not a PC job.

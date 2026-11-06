@@ -398,7 +398,12 @@ app.post("/api/session", async (req, res) => {
     }
     spent++;
     console.log(`  [budget] session ${spent}${BUDGET ? "/" + BUDGET : ""}`);
-    res.json(await provider.createSession(p, { displayMode: DISPLAY_MODE }));
+    const s = await provider.createSession(p, { displayMode: DISPLAY_MODE });
+    // The id is logged the moment it exists. A PC rebooted mid-consult never reaches
+    // /api/session-end, so without this row nothing would know the conversation was
+    // ever opened; the boot sweep below reads these rows. Metadata only, never content.
+    if (s && s.conversation_id) logEvent("session-created", { conversation_id: s.conversation_id, persona: p.id });
+    res.json(s);
   } catch (e) {
     console.error(e);
     res.status(e.status || 500).json({ error: e.message });
@@ -493,7 +498,42 @@ app.post("/api/session-info", (req, res) => {
   res.json({ ok: true });
 });
 
+// Boot sweep. Every consult is ended and hard deleted when it finishes, but a PC rebooted
+// mid-consult never reaches /api/session-end and that conversation sits on Tavus as
+// "ended". Seen at RANZCO on 7 Nov: Room B rebooted at 18:42 UTC during a consult opened
+// at 18:39, and the record was still there an hour later. So at every boot, each
+// session-created row in events.jsonl with no later session-deleted or sweep-deleted row
+// for the same id is ended and hard deleted now. A failed delete stays in the list and is
+// retried at the next boot. Ids come only from our own log and must look like Tavus ids.
+async function sweepOrphans() {
+  if (!provider.endSession || !fs.existsSync(EVENTS)) return;
+  let rows = [];
+  try {
+    rows = fs.readFileSync(EVENTS, "utf8").split("\n").filter(Boolean)
+      .map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+  } catch (e) { console.error("  [sweep] " + e.message); return; }
+  const open = new Map();
+  for (const r of rows) {
+    const id = r.conversation_id;
+    if (!id || !/^c[0-9a-f]{8,}$/i.test(id)) continue;
+    if (r.event === "session-created") open.set(id, r.persona || null);
+    else if (r.event === "session-deleted" || r.event === "sweep-deleted") open.delete(id);
+  }
+  if (!open.size) return;
+  console.log(`  [sweep] ${open.size} conversation(s) opened but never deleted - deleting now`);
+  for (const [id, persona] of [...open].slice(0, 20)) {
+    try {
+      const out = await provider.endSession(id);
+      logEvent(out.deleted ? "sweep-deleted" : "sweep-not-deleted",
+        { conversation_id: id, persona, ...(out.error ? { error: out.error } : {}) });
+    } catch (e) {
+      logEvent("sweep-not-deleted", { conversation_id: id, persona, error: e.message });
+    }
+  }
+}
+
 logEvent("boot", { mode: DISPLAY_MODE });
+sweepOrphans().catch((e) => console.error("  [sweep] " + e.message));
 app.listen(PORT, () => {
   const extra = PROVIDER_NAME === "liveavatar" ? `  (sandbox: ${process.env.LIVEAVATAR_SANDBOX === "true"})` : "";
   console.log(`Meet the Patient prototype on http://localhost:${PORT}  [provider: ${PROVIDER_NAME}]${extra}`);

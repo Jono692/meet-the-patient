@@ -1,8 +1,8 @@
 @echo off
-title Meet the Patient - Update 7
+title Meet the Patient - Update 8
 color 0B
 
-rem Double-click launcher for UPDATE-7. Does exactly what the PowerShell one-liner
+rem Double-click launcher for UPDATE-8. Does exactly what the PowerShell one-liner
 rem does: elevates, downloads the script, checks its SHA-256, and only then runs it.
 rem If the fingerprint does not match it stops and changes nothing.
 
@@ -13,12 +13,12 @@ if %errorlevel% NEQ 0 (
   exit /b
 )
 
-set "URL=https://demo.meetthepatient.com.au/update/UPDATE-7.ps1"
-set "WANT=D7633BD55DA6B4C5F81C81874706C334F1D638AA2002BA2E0F3E9EF76364AF53"
-set "DEST=%TEMP%\UPDATE-7.ps1"
+set "URL=https://demo.meetthepatient.com.au/update/UPDATE-8.ps1"
+set "WANT=B6AF8C02CC8B76FB5050EF3EDFCB7C4C1F30DDE5FFE8DAD94EBD6FFB5CA2D1BA"
+set "DEST=%TEMP%\UPDATE-8.ps1"
 
 echo.
-echo  Meet the Patient - Update 7
+echo  Meet the Patient - Update 8
 echo  ---------------------------
 echo.
 echo  Downloading...
@@ -35,7 +35,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "%DEST%"
 echo.
 echo  ---------------------------
 echo  Finished. READ THE LINES ABOVE before closing.
-echo  Then REBOOT this PC.
+echo  No reboot needed this time. The app has restarted itself.
 goto done
 
 :nonet

@@ -2716,3 +2716,61 @@ Cowork session and the next Claude Code session work from one list. Order is pri
 Still open from today, not for UPDATE-8: delete orphan `cc224b29157e34bf` on Tavus (needs
 Jono's click); TV picture settings; P4next audio checklist; a Peter and a Rami consult in
 front of a real surgeon.
+
+### 7 Nov 2026, 11am — Claude Code — UPDATE-8 built, staged and verified. Install tonight 5pm, both rooms.
+
+Jono's call: consults to 10 minutes, and the morning's lessons shipped. Built on the Mac
+during show day 1, served now, to be installed by Jono at 5pm NZ, Room B then Room A.
+Plan for him at `demo.meetthepatient.com.au/tonight.txt`. No reboot: app.js is unchanged.
+
+**Ships (13 files, 3 changed since UPDATE-7):**
+- `personas.json` 9782D033…: shared_rules without Peter's topography example; "once it's all
+  done" in place of "see the road at night". No clinical value touched. Matches what is
+  already patched live on the six PALs.
+- `tools/tavus-sync.js` 20BCAB31…: cross-patient leak check before any push. Builds every
+  prompt, looks for three-word runs from the other patients' clinical files, allows a run
+  the patient also has in their own file. Exit 3 and names the leak. Tested on the Mac:
+  passes the new file; refuses the old one with "margaret's prompt contains peter's
+  'inferior steepening worse'" and the same for rami.
+- `server.js` 2CB2DDE0…: `session-created` logged with the conversation id at creation;
+  `sweepOrphans()` at boot ends and hard deletes every created-but-never-deleted id,
+  logged `sweep-deleted` / `sweep-not-deleted`; a failed delete is retried next boot. Ids
+  only from our own events.jsonl and must match `^c[0-9a-f]{8,}$`. Tested in a scratch
+  copy on port 3998 with a seeded log: the orphan swept (already gone on Tavus, 400 read
+  as deleted), the properly deleted one untouched, a junk id ignored. Mac's live service
+  on 3000 untouched throughout. Rows older than UPDATE-8 have no session-created, so this
+  morning's orphan `cc224b29157e34bf` is NOT swept by it; still Jono's click.
+
+**The script, `UPDATE-8.ps1` B6AF8C02CC8B76FB5050EF3EDFCB7C4C1F30DDE5FFE8DAD94EBD6FFB5CA2D1BA:**
+- refuses before step 1 unless elevated (hosts needs it)
+- step 2 takes any file whose on-disk hash already matches its pin from the PC, not the
+  tunnel: hold.mp4's 16 MB is no longer downloaded. Still hashed.
+- step 4 also backs up `.env` as `_env`
+- **step 5b, first update to touch `.env`:** `TAVUS_MAX_CALL_SECONDS=600` and
+  `TAVUS_INTERRUPTIBILITY=low`, whole-line match, replaced or appended, before/after of
+  those two lines printed, nothing else read or printed, UTF-8 no BOM, file's own line
+  endings kept, read back and thrown on mismatch.
+- **step 5c:** pins demo, room-a, room-b .meetthepatient.com.au -> 104.21.96.126 in hosts
+  if absent, flushdns, resolves each and reports.
+- step 6 understands exit 3 from the leak check
+- step 8 also calls `/api/peer/room` and reports whether the other room answers
+- ends with NO REBOOT NEEDED
+- `UPDATE-8.bat` double-click launcher pinned to that hash; `UPDATE-7.bat` and
+  `UPDATE-7.ps1` withdrawn from `public/`.
+
+**Verified through the tunnel** with a fresh `?v=`: UPDATE-8.ps1, UPDATE-8.bat,
+personas.json, server.js, tavus-sync.js, SHA256SUMS.txt, README.txt, tonight.txt all
+HTTP 200 and byte-identical to the Mac. UPDATE-7.ps1 answers 404.
+
+**Not machine-parsed.** The Mac has no PowerShell and Homebrew cannot install it (CLT
+needs a sudo update for macOS 27). UPDATE-8.ps1 was reviewed line by line for Windows
+PowerShell 5.1, not parsed. A syntax error would stop the file before step 1 with nothing
+changed; tonight's first run on Room B is the parse test. Said so in README and tonight.txt.
+
+**Melbourne after each room:** reachable, room id, `/api/config`, six PALs rebuilt at low
+(personas changed, so new signatures), tune collected by the kiosk, `/api/peer/room`
+from each side, and no `sweep-not-deleted` rows.
+
+Not in UPDATE-8, still on the backlog above: control page without the relay (CORS);
+soft wind-down before the cap; the `|| state.personas[0]` fallback; demo/control gating.
+`deploy/install.ps1` now writes 600 for any rebuild.

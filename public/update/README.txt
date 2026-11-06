@@ -1,110 +1,73 @@
-MEET THE PATIENT - UPDATE 7
-Prepared on the Mac mini, 5 Nov 2026. Everything here is verified against SHA256SUMS.txt
-and was checked byte-for-byte through the tunnel the same way the PCs will fetch it.
+MEET THE PATIENT - UPDATE 8
+Prepared on the Mac mini, 7 Nov 2026, during show day 1 at RANZCO. Every file here is
+verified against SHA256SUMS.txt and checked byte-for-byte through the tunnel the same way
+the PCs fetch it.
 
-UPDATE 7 REPLACES UPDATE 4, WHICH REPLACED UPDATE 2. RUN UPDATE-7.ps1 AND NOTHING ELSE.
-UPDATE-3.ps1 and UPDATE-2.ps1 have been withdrawn from this folder on purpose.
+UPDATE 8 REPLACES UPDATE 7. RUN UPDATE-8.ps1 AND NOTHING ELSE. UPDATE-7.ps1 has been
+withdrawn from this folder on purpose. Idempotent over 7, 6, 5 and 4.
 
-ONE file differs from UPDATE 3: public\app.js.
+THREE files differ from UPDATE 7, and the script now also edits two lines of .env and
+pins three hostnames in the hosts file. app.js is UNCHANGED, so NO REBOOT this time.
 
-  public\app.js         PORTRAIT FRAMING. The Tavus feed is 1280x720 landscape and their
-                        API has no aspect setting, so object-fit:cover on the stand's
-                        1080x1920 screen showed only 31.6% of the frame's width: a head
-                        edge to edge, and for Margaret, whose head centre sits at 61.4%
-                        across instead of the middle, the right of her face off the edge.
-                        Head centres measured 5 Nov off the Tavus upload crops - Peter
-                        .542, Margaret .614, Rami .489. The page now draws the whole frame
-                        at 67.5% of the screen height, sat on the bottom edge, face
-                        centred, with the chroma key's own #003595 around it. Landscape
-                        screens are untouched, so the Mac and Alcon's demo link do not
-                        change. Fallbacks live on the kiosk URL and need no rebuild:
-                        ?framing=nudge, ?framing=off, ?fill=, ?ox=.
+  personas.json         THE PROMPT LEAK. shared_rules, which every patient gets, carried
+                        Peter's actual topography result as a worked example of how to
+                        describe your scans. On the first show morning Margaret recited
+                        it to a surgeon. The example is gone; the instruction now says
+                        "only ever describe YOUR OWN results from the list below". One
+                        other example line ("once I can see the road at night", Peter's
+                        framing) reworded. NO clinical value added or changed anywhere.
+                        Patched live on Tavus at 8.11am the same morning; this makes the
+                        shipped file match so the next PAL build cannot bring it back.
 
-If UPDATE-3 has already been run on a PC, run UPDATE-4 over the top of it. Same install,
-idempotent: it replaces app.js and re-verifies the other twelve.
+  tools\tavus-sync.js   LEAK CHECK. Before pushing, builds every patient's prompt and
+                        looks in it for three-word runs from the OTHER patients' clinical
+                        files. Refuses with exit code 3 and names the leak. Tested on the
+                        Mac: passes the new personas.json, refuses the old one with
+                        "margaret's prompt contains peter's 'inferior steepening worse'".
 
-CARRIED OVER FROM UPDATE 3. Two differences from UPDATE 2:
+  server.js             ORPHAN SWEEP. Logs each conversation id the moment it is created
+                        (session-created). On boot, any conversation created but never
+                        deleted is ended and hard deleted, and logged as sweep-deleted.
+                        Closes the one gap in the no-recording promise: a PC rebooted
+                        mid-consult never reaches session-end. Happened on Room B at
+                        18:42 UTC on 7 Nov. Tested on the Mac on a spare port.
 
-  personas.json         Caleb Bartolo's changes of 4 November, after he tested Margaret
-                        and Rami. Margaret and Rami now name the cataract diagnosis when
-                        the surgeon asks what has brought them in, as Peter already did.
-                        Rami's file reads "no visual field loss" where it read "some mild
-                        visual field loss, stable" - Alcon's clinical call, changed in all
-                        three places it appeared. Rami also says the ophthalmologist who
-                        looks after his glaucoma does not do cataract surgery, which is
-                        why he has been referred on. Not done: glasses on Rami's avatar.
-                        That face is the actor filmed on 20 October and the only way to
-                        add glasses is to film him again. Caleb said no worries if not.
+  .env (two lines)      TAVUS_MAX_CALL_SECONDS=600    consults 7 min -> 10 min (Jono)
+                        TAVUS_INTERRUPTIBILITY=low    written if missing
+                        Matched as whole lines. Nothing else in .env is read, printed or
+                        rewritten; .env is backed up to the backup folder first as _env.
 
-  step order            The prompt push now runs BEFORE the app restart instead of after.
-                        The app reads the PAL cache once at boot, so a push into a running
-                        app wrote entries nothing would re-read: the first consult then
-                        built its own duplicate PAL and overwrote them. Measured on the Mac
-                        on 4 Nov. The prompt was right either way - it is the same
-                        personas.json - but the push was doing nothing.
+  hosts (three lines)   demo, room-a, room-b .meetthepatient.com.au -> 104.21.96.126,
+                        each only if not already present. The venue intercepts port 53
+                        and answers "no such domain". With all three pinned, the host
+                        page in one room can show the other room again.
 
-If you are holding the T7's "5 Update 2" folder, its personas.json is the OLD one. Running
-UPDATE-7.ps1 with -FromFolder against it will stop on that hash and change nothing, which
-is the check working. Refresh the folder from iCloud first, or use the tunnel.
+  hold.mp4              No longer downloaded when the copy on the PC already matches its
+                        fingerprint. Still hashed. Saves 16 MB on venue internet.
 
-WHAT IT CHANGES
+HOW TO APPLY IT - the double-click file is the easy way:
 
-  The prompt            personas.json AND providers\prompt.js. Both. The prompt.js on the
-                        show PCs is older than the Mac's and is missing two whole blocks:
-                        the patient's own eye history and test results, and what matters
-                        most to them. Without it the patients cannot tell a surgeon their
-                        scans and have no priorities to be listened to, which is the
-                        activation. personas.json also carries 3 Nov's tightening: the AI
-                        question, no ratings or scores, a friend's lens described but never
-                        how it went, medication named but never praised.
+  Edge, go to demo.meetthepatient.com.au/UPDATE-8.bat, Keep, double-click, accept the
+  administrator prompt. It checks the script's fingerprint before running it.
 
-  Hard delete           providers\tavus.js and server.js. Every consult is now ended AND
-                        hard deleted from Tavus the moment it finishes. The outcome goes
-                        into events.jsonl as session-deleted or session-not-deleted.
+  Or the one line in PowerShell as Administrator:
 
-  The hold screen       public\app.js and public\idle\hold.mp4. The approved loop. app.js
-                        looks for one clip at /idle/hold.mp4 instead of three per-patient
-                        ones, so both files go together or neither does.
+    $ErrorActionPreference="Stop";[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$f="$env:TEMP\UPDATE-8.ps1";iwr "https://demo.meetthepatient.com.au/update/UPDATE-8.ps1?v=$(Get-Random)" -OutFile $f -UseBasicParsing -Headers @{Accept="*/*"};if((Get-FileHash $f -Algorithm SHA256).Hash -ne "B6AF8C02CC8B76FB5050EF3EDFCB7C4C1F30DDE5FFE8DAD94EBD6FFB5CA2D1BA"){throw "UPDATE-8.ps1 does not match. Nothing has been run."};powershell -ExecutionPolicy Bypass -File $f
 
-  Control page + logo   Already on both show PCs. In here for a SPARE built from the USB
-                        stick, which has neither.
+  From a folder with no internet:
 
-  CLAUDE.md + the       The brief for Claude Code ON A SHOW PC, and a copy of the Auckland
-  Auckland brief        brief beside it at deploy\CLAUDE-BRIEF-AUCKLAND.md. The CLAUDE.md
-                        these PCs came with is the Mac's: it says Claude Code is on the Mac
-                        mini and tells it to run "npm start", which here would start a second
-                        app fighting the running one for port 3000.
+    powershell -ExecutionPolicy Bypass -File "<folder>\UPDATE-8.ps1" -FromFolder "<folder>"
 
-  tools\                tavus-sync.js         push the prompt to Tavus, read it back
-                        tavus-delete-check.js prove a consult really is deleted, on this PC
-                        tavus-purge.js        list what is left on the account; --delete clears it
+  The script must run as Administrator (the hosts file needs it) and refuses otherwise
+  before changing anything. It waits for a gap between consults, backs everything up,
+  installs, sets .env, pins hosts, pushes the prompt to Tavus (leak check first),
+  restarts the app, proves it is back, proves the other room is reachable, and proves a
+  consult is hard deleted. Watch STEP 6 and STEP 8.
 
-HOW TO APPLY IT
+NO REBOOT. The stand page in the kiosk is the same app.js; the server restarted itself.
 
-  Over the tunnel, while the Mac is up - one line in PowerShell as Administrator. This
-  checks the script's own fingerprint and refuses to run it if it does not match:
+THE ?v= ON THAT URL MATTERS. Cloudflare caches this folder for four hours, 404s included.
 
-    $ErrorActionPreference="Stop";[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$f="$env:TEMP\UPDATE-7.ps1";iwr "https://demo.meetthepatient.com.au/update/UPDATE-7.ps1?v=$(Get-Random)" -OutFile $f -UseBasicParsing -Headers @{Accept="*/*"};if((Get-FileHash $f -Algorithm SHA256).Hash -ne "D7633BD55DA6B4C5F81C81874706C334F1D638AA2002BA2E0F3E9EF76364AF53"){throw "UPDATE-7.ps1 does not match. Nothing has been run."};powershell -ExecutionPolicy Bypass -File $f
-
-  From this folder on the T7, with no internet - same script, local files. Only after the
-  folder has been refreshed with the new personas.json and brief:
-
-    powershell -ExecutionPolicy Bypass -File "<this folder>\UPDATE-7.ps1" -FromFolder "<this folder>"
-
-  The -FromFolder route needs no fingerprint typed in by hand: the script checks all
-  thirteen files against their own SHA-256 as it copies them. Either way it finds and runs
-  Node BEFORE it stops or changes anything, checks every file's SHA-256 before touching the
-  PC, waits for a gap between consults, backs the old files up, installs, pushes the prompt
-  to Tavus, restarts the app, then proves the app is back and that a consult really is
-  deleted.
-
-AND THEN REBOOT THE PC. The kiosk browser is still showing the old stand page from memory
-and F5 is swallowed by the app, so the hold screen will not appear until it reloads.
-
-THE ?v= ON THAT URL MATTERS. Cloudflare caches this folder for four hours, 404s included,
-so without it a PC can be handed a stale answer or an error page wearing a .js name.
-
-JOB 2, THE MARGARET REFRAME, IS IN HERE. It was outstanding under UPDATE 3 and is not
-outstanding any more - it is the app.js in this folder. What is left at the stand is to
-look at her on the rotated screen and, only if she needs it, reach for ?fill= or ?ox= on
-the kiosk URL. See JOB 2 in CLAUDE-BRIEF-AUCKLAND.md and deploy\TUNING-RUNBOOK.md.
+NOT MACHINE-PARSED. The Mac cannot run PowerShell (its command-line tools need a sudo
+update), so UPDATE-8.ps1 was reviewed by eye, not parsed. A syntax error shows up as
+PowerShell refusing to run the file at all, before step 1, with nothing changed.
