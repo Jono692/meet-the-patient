@@ -2441,3 +2441,49 @@ and the room goes out of service looking exactly like a crash. That caught Jono 
 **Open:** install UPDATE-6; TV picture settings (label the HDMI input PC for 4:4:4, picture
 mode to PC/Game, noise reduction and motion processing off); TAVUS_INTERRUPTIBILITY still
 high; four stale Tavus conversations from 3 Nov; Caleb's 4 Nov transcripts.
+
+### 6 Nov 2026 (night) — Claude Code — interruptibility dropped to low, server side, without touching either PC
+
+Done at Jono's instruction. **`pal_interruptibility` is now `low` on every Alcon PAL that was
+set to `high` — 32 of them.** Nothing else was altered: `turn_taking_patience` stays `high` and
+`turn_detection_model` stays `sparrow-2` on all 32, each read back individually to confirm.
+
+**Why this reaches the stand without a PC visit.** `createSession` sends only `pal_id`,
+`face_id`, greeting and properties — it never sends `layers`. Layers live on the PAL, so a
+conversation inherits whatever the PAL holds server side at the moment it is created. And
+because neither `.env` was touched, the sha1 in `palFor` is unchanged, so both PCs keep
+reusing their cached ids rather than building fresh PALs.
+
+**Why 32 and not 6.** The ids each PC holds are in its own `.tavus-pals.json`, which cannot be
+read remotely. There are **46 "Alcon patient" PALs on the account** with duplicated names and
+identical settings: `palFor` never looks for an existing remote PAL, it POSTs a new one on any
+cache miss, and nothing ever deletes the old ones. Margaret and Rami have a dozen each. The
+newest pair was created 02:59:19 today, just before the UPDATE-5 reboots, and **there is no
+Peter in that batch at all**, so Peter is on an older id. Identifying the live six was
+guesswork, so every `high` one was patched instead. Told Jono this was a deviation before doing it.
+
+**Verified with a real session through our own code path**, not a shortcut: `POST /api/session`
+on the Mac reused cached PAL `p4621289f911` (no new PAL created), the conversation went
+`active`, and that PAL reads `pal_interruptibility: low`, `turn_taking_patience: high`,
+`sparrow-2`. Test conversation then hard deleted — `400 Invalid conversation_id` on read back.
+
+**THIS IS NOT PERMANENT.** `TAVUS_INTERRUPTIBILITY=high` still sits in `.env` on both show PCs.
+Anything that makes `palFor` miss its cache — `tavus-sync.js --push`, a rebuild, a lost or
+replaced `.tavus-pals.json`, an UPDATE script running its step 6 — will create **new** PALs at
+`high` and silently undo this. **Nobody will be told.** To make it stick, `.env` must be changed
+on both PCs and then push-then-restart, in that order.
+
+Mechanism proved first on `pcd9a22ff8b8` "Alcon patient Graeme", an unused 28 Oct test persona,
+which went medium -> low in the process. Harmless, but noting it.
+
+Method: `PATCH /v2/pals/{id}` with JSON Patch,
+`[{"op":"replace","path":"/layers/conversational_flow/pal_interruptibility","value":"low"}]`.
+Returns 200 and alters only that field.
+
+Correction to my own work tonight: my first cleanup used a plain `DELETE` and the conversation
+survived as `status: ended`, readable at 200. That is **not** an app fault — `endSession` always
+sends `?hard=true`, and the comments in `providers/tavus.js` document that a plain delete is a
+soft delete. Re-deleted with `?hard=true`, confirmed gone. The hard-delete promise is intact.
+
+Housekeeping, not urgent: 46 orphan PALs and the four stale 3 Nov conversations are still on the
+account.
