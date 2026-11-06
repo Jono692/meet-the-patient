@@ -22,13 +22,19 @@ GROUND RULES
 ----------------------------------------------------------------------
 JOB 1 - YOU DO THIS. .env, BEFORE ANYTHING ELSE RUNS.
 ----------------------------------------------------------------------
-Open C:\meet-the-patient\.env and change the single line
+THERE IS NO TAVUS_INTERRUPTIBILITY LINE IN .env ON EITHER PC. Checked on
+both, 6 Nov. So you are ADDING a line, not changing one. Do not go hunting
+for a line that says "high" - there isn't one.
 
-      TAVUS_INTERRUPTIBILITY=high
-to
+Open C:\meet-the-patient\.env and ADD this line at the end:
+
       TAVUS_INTERRUPTIBILITY=low
 
 Change nothing else. Confirm to Jono when it is saved.
+
+The code reads `process.env.TAVUS_INTERRUPTIBILITY || "high"`, so with no
+line at all the effective setting is high. That is why both rooms have been
+running high without anyone seeing it written down anywhere.
 
 Why the order matters: "high" makes the patient stop talking the instant
 it hears anything speech-like, which on a conference floor is constant.
@@ -36,6 +42,14 @@ Last night those settings were patched directly on Tavus, but .env still
 says high, and JOB 2 rebuilds the PALs from .env. If .env is not changed
 first, JOB 2 silently puts interruptibility back to high and nothing
 tells anyone.
+
+IF YOU ARE ROOM B: do JOB 1 BEFORE anything restarts this PC or the app.
+Room B's personas.json on disk was fixed to ay-scan by hand, but the app
+reads personas.json once at boot, so it is still SERVING the old A-scan
+prompt from memory. The moment it restarts it will notice the new prompt,
+rebuild its PALs - and build them from .env. With no line in .env that
+means high, which quietly undoes the interruptibility work done last
+night. Add the line first, then let it restart.
 
 ----------------------------------------------------------------------
 JOB 2 - JONO DOES THIS. You cannot. Ask him to.
@@ -66,6 +80,12 @@ it. That was not a mistake by whoever did it: personas.json is pinned in
 every update and gets overwritten every time, so a local edit can never
 survive. It is now corrected in the shipped file, in all three places
 Margaret and Rami say it, so UPDATE-7 installs it rather than removing it.
+
+As of tonight the two rooms DISAGREE: Room B's personas.json is already
+the ay-scan version, Room A's is still A-scan. So right now Margaret says
+the word differently depending on which room a surgeon walks into.
+UPDATE-7 ships a personas.json that is byte-for-byte identical to the one
+Room B already has, so it changes nothing on B and brings A into line.
 
 After the update, confirm C:\meet-the-patient\personas.json contains
 "ay-scan" and not "A-scan". If it says A-scan, the update did not take.
