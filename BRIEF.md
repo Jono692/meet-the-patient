@@ -2684,3 +2684,35 @@ path that leaves a surgeon's conversation on a vendor's server.
 **Rotation note:** of six Room B consults today, five were Margaret. Hosts are picking her
 rather than letting the rotation run. Not a fault, but Peter and Rami have barely been
 exercised in front of a surgeon yet.
+
+### 7 Nov 2026, 9am — Claude Code — UPDATE-8 backlog, consolidated. Nothing here is built.
+
+Jono's call from the floor: **consults go to 10 minutes in UPDATE-8.** Collected here so the
+Cowork session and the next Claude Code session work from one list. Order is priority.
+
+1. **Cap to 10 minutes.** `TAVUS_MAX_CALL_SECONDS=420` -> `600` in both show PCs' `.env`. No
+   update has edited `.env` before (secrets live there). UPDATE-8 does a single-line
+   targeted replace of that key only, prints the line before and after, touches nothing
+   else, and refuses if the key is absent. `deploy/install.ps1` already changed to write 600
+   for any rebuild. The Mac's demo `.env` stays at 420 on purpose (public link, client demo).
+2. **Ship the corrected `personas.json`** (shared_rules without Peter's topography), hash
+   pinned. Without this a future push rebuilds the leak.
+3. **Cross-patient leak check in `tavus-sync.js`:** build each prompt, refuse the push if
+   any other patient's `clinical_file` values appear in it.
+4. **`TAVUS_INTERRUPTIBILITY=low` written by the installer** rather than relying on a
+   hand-added line; and UPDATE-8 verifies the line is present before step 6.
+5. **Orphan sweep:** log `conversation_id` at `consult_start`; on boot hard-delete any
+   start without a matching end. Closes the mid-consult-reboot gap seen at 18:39 today.
+6. **Control page without the relay:** fetch each room by absolute URL from the phone, CORS
+   on the two read endpoints only, drop `/api/peer/*`. Installer pins all three hostnames in
+   `hosts`. Gate or relabel `demo/control/` so it cannot be mistaken for a show room.
+7. **Soft wind-down:** at cap minus 45 s the patient says something natural to close, so the
+   call does not end mid-sentence. Client and prompt work; design with Alcon.
+8. **Fail loudly in `client.js`:** replace the silent `|| state.personas[0]` fallback with an
+   error; a rotation miss must never quietly become Peter.
+9. **Skip `hold.mp4` when the on-disk hash already matches,** so an update is 400 KB not
+   16 MB on venue internet.
+
+Still open from today, not for UPDATE-8: delete orphan `cc224b29157e34bf` on Tavus (needs
+Jono's click); TV picture settings; P4next audio checklist; a Peter and a Rami consult in
+front of a real surgeon.
