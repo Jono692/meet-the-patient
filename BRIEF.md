@@ -2350,3 +2350,45 @@ width. Not worth a Tier 4 rebuild. Leaving it.
 
 Still open: UPDATE-4 to be run on both PCs; the TAVUS_INTERRUPTIBILITY high-to-low A/B; four
 3 Nov test conversations to purge; Caleb's 4 Nov transcripts to keep or delete.
+
+### 6 Nov 2026 (later) — Claude Code — Room A setup day, and the network traps
+
+Room A is updated. What cost the morning, so Room B does not repeat it:
+
+**The screens are TCL running Google TV, and neither supplied remote matches** (a Samsung
+BN59-01315D and a One For All universal). Control is the TV's single physical button: with
+the TV already on, a SHORT press opens an on-screen menu and further short presses step
+through power, input and volume. That is the remote for the week.
+
+**The show PC's Ethernet carries a leftover static of 192.168.137.1 with no gateway.** That
+is the Windows Internet Connection Sharing host address. Nothing in this brief records who
+set it or why. Effects: no route off the subnet, no DNS, and because the adapter still has
+link and an address, Windows PREFERS it over wifi and sends DNS out an adapter that has
+none. Unplug the Ethernet or the wifi cannot work. If ICS is enabled it will also snap the
+adapter back to .1 even when set to Automatic.
+
+**NZICC guest wifi DNS returns NXDOMAIN for demo.meetthepatient.com.au.** Verified the host
+resolves fine on 1.1.1.1, 8.8.8.8 and 9.9.9.9, so it is their resolver, not our zone.
+Setting the adapter's DNS to 1.1.1.1 worked once then stopped. The fix that held was pinning
+it in the hosts file:
+
+    Add-Content C:\Windows\System32\drivers\etc\hosts "104.21.96.126 demo.meetthepatient.com.au"
+
+Cloudflare address, so re-check it if downloads start failing on name resolution.
+
+**The wifi adapter is named `WiFi`, not `Wi-Fi`.** A netsh command using the hyphenated name
+fails silently as far as the operator can tell. The NIC is a Realtek 8811CU USB dongle; the
+PC has no built-in wireless.
+
+Windows display orientation is set per PC and is the precondition for the portrait framing:
+`applyFraming` returns early when the viewport is not taller than wide, so with Windows left
+in landscape UPDATE-4 installs correctly and does nothing visible. Room A is now Portrait at
+1080x1920.
+
+Wrote a self-contained prompt for Claude Code running ON the show PC, since relaying
+commands by photo was the real bottleneck. Room B gets the same with its own gotchas.
+
+Still open: Margaret's framing not yet eyeballed on the rotated screen; Room B entirely;
+the screen-height question (eye line lands 0.51 m above the bottom edge of the panel, so
+if the mount is high she looks down at a seated surgeon and only a physical fix helps);
+TAVUS_INTERRUPTIBILITY still high; the venue's proper network port still to arrive.
