@@ -2532,3 +2532,72 @@ the phantom-patient fix. Audio (P4next) and the TV picture settings not yet done
 **Room A is untouched this morning** and still has `A-scan` in personas.json, no
 `TAVUS_INTERRUPTIBILITY` line in `.env`, and no UPDATE-7. It will need the same three
 steps in the same order. Its hosts pin went in yesterday, so DNS should not repeat there.
+
+### 7 Nov 2026, 8am — Claude Code — post-mortem: why "both rooms on one page" died at the stand
+
+Jono asked for this analysis during the show. It is a design error of mine from 29 Oct.
+
+**What broke.** `/api/peer/room` returns 502 on both rooms, so each room's control page
+shows the other room as offline. Each room itself is fine: both answer in under 0.2s, both
+control pages serve, both are remotely tunable.
+
+**Root cause, measured not guessed.** The failure returns in 0.19s. Timing distinguishes
+the two candidates cleanly, tested against the current build on a spare port:
+
+    PEER_URL = hostname that will not resolve   ->  0.188s, "fetch failed"
+    PEER_URL = LAN IP that is not there         ->  4.015s, "aborted due to timeout"
+    the live rooms                              ->  0.211s and 0.188s
+
+So `PEER_URL` is a **hostname failing DNS**, not a stale LAN IP. My first diagnosis said
+stale LAN IP and was wrong. Jono corrected it with "it worked yesterday", which was the
+clue that mattered: DNS worked yesterday, and the venue only started hijacking port 53
+today.
+
+**Ruled out: UPDATE-7.** The only change to `server.js` since UPDATE-4 is 19 lines, all
+inside the `/api/room/command` handler. Nothing touched `PEER_URL`, `peer()` or the
+`/api/peer/*` routes. The peer code works: current build plus a valid address returns the
+peer's state in 0.24s.
+
+**The design error.** The 29 Oct entry above records the decision in my own words: relay
+to the other room server side "so there is no cross-origin handling and either room's URL
+gives you both rooms". The phone could already reach both rooms independently over two
+tunnels. The relay replaced two independent paths with a chain, phone -> PC A ->
+Cloudflare -> PC B, to avoid writing about three lines of CORS. The app has no CORS
+handling and the control page has no absolute URLs, so the simpler design was never tried.
+
+Three failure modes were created. Two have bitten:
+1. 30 Oct: `CONTROL_PIN` must match on both PCs, because the relay authenticates with its
+   own. Cost a debugging session, recorded above.
+2. 7 Nov: the middle hop requires a *show PC* to resolve a public hostname. Venue DNS
+   hijack killed it. The phone resolving correctly is irrelevant.
+3. Untriggered: if one PC's app stops, its card disappears from the *other* room's page.
+   The design claimed the opposite as its benefit.
+
+**Why it is unrecoverable today.** `PEER_URL` is read once at boot. The fix needs a `.env`
+edit or a hosts pin and a restart, both at a keyboard, and the PCs are sealed in the wall.
+Same class of fault as the PAL cache being read once at boot, which has cost time three
+times now.
+
+**Proximate cause, also mine.** When I diagnosed the DNS hijack this morning I pinned one
+hostname. `demo`, `room-a` and `room-b` are on the same zone and resolve to the same two
+IPs (104.21.96.126, 172.67.180.194). One more line in the same command and the relay would
+still be up. I fixed the symptom in front of me instead of the class of problem.
+
+**The fix for the next build, not today.** Control page fetches each room by absolute URL;
+`Access-Control-Allow-Origin` on the two read endpoints only. Two independent paths, no
+shared PIN, no PC-to-PC dependency, and the phone does the resolving. Survives either PC
+being down, which is what the relay was supposed to do. Also: pin all three hostnames in
+`hosts` in the installer, and read `PEER_URL` per request instead of once at boot.
+
+**Today's workaround, no PC access needed.** One bookmark per room, each host drives their
+own:
+    https://room-a.meetthepatient.com.au/control/
+    https://room-b.meetthepatient.com.au/control/
+Ignore the other-room card. Two bookmarks lose nothing, which is the tell: the relay added
+three failure modes and no capability.
+
+**Separate trap found while checking this.** `demo.meetthepatient.com.au/control/` serves a
+control page off the **Mac in Melbourne**. It reports `roomId: A`, `displayMode: test`,
+`hasPeer: false`, so it draws one card labelled "Room 1" and looks entirely normal while
+driving nothing at the stand and spending Tavus minutes. It must not be on any host's
+phone. Worth gating or relabelling in the next build.
