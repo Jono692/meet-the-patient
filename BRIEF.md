@@ -2487,3 +2487,48 @@ soft delete. Re-deleted with `?hard=true`, confirmed gone. The hard-delete promi
 
 Housekeeping, not urgent: 46 orphan PALs and the four stale 3 Nov conversations are still on the
 account.
+
+### 7 Nov 2026, morning — Claude Code — Room B updated to UPDATE-7 and verified
+
+Room B (the Room 2 PC) is on UPDATE-7 and verified from Melbourne. Done before doors.
+
+**The network trap repeated, with a new twist.** `demo.meetthepatient.com.au` would not
+resolve on the Room B PC: `iwr` failed with "The remote name could not be resolved". This
+time it was NOT the static IP that cost us yesterday — the adapter was on venue DHCP
+(Ethernet, 172.18.128.24) with a real gateway, and TCP 443 to Cloudflare succeeded. The
+venue is intercepting port 53: `Resolve-DnsName ... -Server 1.1.1.1` returned NXDOMAIN
+too, so pointing at a public resolver cannot work. The fix was the hosts pin, same as
+Room A yesterday:
+
+    Add-Content C:\Windows\System32\drivers\etc\hosts "`n104.21.96.126 demo.meetthepatient.com.au"
+
+`api.tavus.io` appeared not to resolve in a first check, which would have been the show
+rather than the update. It was a false alarm: step 6 of the update pushed to Tavus
+successfully from that PC, which is the only proof of Tavus reachability worth having.
+
+**Order that mattered.** `TAVUS_INTERRUPTIBILITY=low` went into `.env` before the update
+ran. Confirmed from Melbourne afterwards by the PALs: three fresh ones built at 18:18 UTC,
+one per patient, all three `pal_interruptibility: low`. Had the line not been in, step 6
+would have rebuilt them at `high` and silently undone 6 Nov's work.
+
+**Correction to the 6 Nov log.** That entry says all 46 Alcon PALs are at `low`. They are
+not: the account reads 36 `low` and 13 `medium`. The 13 are all dated 28–30 Oct, are
+orphans from earlier builds and are not in use. Every PAL the rooms actually serve is
+`low`. The claim was wrong; the conclusion was not.
+
+**Verified from Melbourne over room-b.meetthepatient.com.au:**
+- reachable, 0.2s; `/api/room` reports id B, idle
+- `app.js` served by the room is byte-identical to the UPDATE-7 pin
+  (8279EBDA45DFCA1E6009E008676876B56CDF2C20B67975053BF927D348199334)
+- `displayMode: live`, `keepTranscripts: false` — the no-recording promise intact
+- **remote tuning works end to end.** A `tune` posted from Melbourne was collected by the
+  kiosk page itself within 1.8s, with nobody touching the PC. A junk parameter was
+  correctly rejected 400 against the whitelist. This is the capability that should have
+  been built before we flew.
+
+**Still open on Room B:** the two back-to-back consults, which are the only real test of
+the phantom-patient fix. Audio (P4next) and the TV picture settings not yet done.
+
+**Room A is untouched this morning** and still has `A-scan` in personas.json, no
+`TAVUS_INTERRUPTIBILITY` line in `.env`, and no UPDATE-7. It will need the same three
+steps in the same order. Its hosts pin went in yesterday, so DNS should not repeat there.
