@@ -1,30 +1,28 @@
 <#
-  Meet the Patient - update 5: the phantom patient at the start of a consult.
+  Meet the Patient - update 6: live remote tuning, with no physical access.
 
-  THIS REPLACES UPDATE-4. ONE file differs from UPDATE-4: public\app.js.
-  If UPDATE-4 has already been run on this PC, run this over the top of it. It is
-  the same install and it is idempotent.
+  THIS REPLACES UPDATE-5. Two files differ: public\app.js and server.js.
+  Idempotent over UPDATE-5, over UPDATE-4, over UPDATE-3.
 
-    * THE PHANTOM. Starting a consult showed, in order, a thin black bar, then the
-      PREVIOUS patient shifted sideways, then the right patient. Three separate
-      causes, all fixed here. Seen at the stand 6 Nov.
+    * The stand already polled /api/room/command once a second for start, end,
+      skip, pick, open and close. It now also accepts "tune" and "reload".
 
-      1. The video element is framed by height with width:auto. Before its stream
-         reports any dimensions that collapses to near-zero width - the black bar.
-      2. The WebGL canvas was only ever HIDDEN between consults, never blanked, so
-         it still held the last frame of the previous patient and was shown again
-         before the new stream had drawn anything.
-      3. That stale frame was positioned using the NEW patient's horizontal
-         centring, which is why the old patient appeared offset.
+      tune carries display settings and is APPLIED LIVE - no reload, no reboot,
+      safe mid-consult. Whitelisted keys only: framing, fill, ox, sim, smooth,
+      spill, bg. Values are capped at 24 characters and must match
+      [A-Za-z0-9.#-], because they end up driving CSS on the stand screen.
 
-      Both stage layers are now hidden until the renderer has a frame of THIS
-      consult, and the canvas is cleared to the stand background when a consult
-      ends. Four separate paths can reveal the stage, including a 4 second
-      backstop, so a stage that never gets a frame cannot stay blank.
+      Overrides sit ON TOP of the kiosk URL and do NOT survive a reload. A reboot
+      always returns the room to whatever show-start.ps1 says, so there is no way
+      to leave a room in a state nobody can explain the next morning.
 
-  Everything else is exactly as UPDATE-4 shipped it: the portrait framing, the
-  prompt, the hard delete and the hold screen. Framing knobs are unchanged and
-  still live on the kiosk URL: ?fill=, ?ox=, ?framing=nudge|off, ?key=0.
+    * Nothing about start, end, skip, pick, open or close changed. If the tuning
+      half ever misbehaves the worst case is that tuning does nothing.
+
+  Why: every change so far has needed someone physically at the PC, and the PCs
+  are between two walls with no screen or keyboard on them. Settings that were
+  only reachable by editing the kiosk URL and rebooting are now reachable from
+  the host phone or from the Mac in Melbourne.
 
   AND THEN REBOOT. The kiosk holds the old app.js and F5 is swallowed.
 #>
@@ -49,8 +47,8 @@ $Files = @(
   @{ Name = "personas.json";   Url = "personas.json";             Dest = "personas.json";                             Sha = "32A293FBE01215674B104E41B39DD6C6FCA2BAFC910BF9897578F8CD4C1E062E" },
   @{ Name = "prompt.js";       Url = "prompt.js";                 Dest = "providers\prompt.js";                       Sha = "7AE305BF479B7960E606DA6BAAB2A52171DE322B67B55E80CB2D6393CCBD8DE7" },
   @{ Name = "tavus provider";  Url = "tavus-provider.js";         Dest = "providers\tavus.js";                        Sha = "744F40CFA0ADDA599DFCC719C5E3E5DF55556B9CBB6AF9AD4C466B366A84B651" },
-  @{ Name = "server.js";       Url = "server.js";                 Dest = "server.js";                                 Sha = "6AAD4243CE078D8166C4FD7EF69ACDECAC9C3E35EF7F33A26C375B61C139208C" },
-  @{ Name = "stand page";      Url = "app.js";                    Dest = "public\app.js";                             Sha = "514ABE9936626E6AD795419D89574DEAB39EFD9FF1374F1B3521E21298224B73" },
+  @{ Name = "server.js";       Url = "server.js";                 Dest = "server.js";                                 Sha = "69773A66A3EA144DDE8F2612A6707737357ABA2B799A40BB9B8D742241353383" },
+  @{ Name = "stand page";      Url = "app.js";                    Dest = "public\app.js";                             Sha = "8279EBDA45DFCA1E6009E008676876B56CDF2C20B67975053BF927D348199334" },
   @{ Name = "hold screen";     Url = "hold.mp4";                  Dest = "public\idle\hold.mp4";                      Sha = "1876E7594FD4A1374D286DFDF933D81C5912572160E2D97F90BA56DF439D4DBA" },
   @{ Name = "control page";    Url = "control-index.txt";         Dest = "public\control\index.html";                 Sha = "ED81B677C77CBEE6A314D3171887BFA345023239735DFC818743FE69EEA8B514" },
   @{ Name = "Alcon logo";      Url = "alcon.png";                 Dest = "public\control\alcon.png";                  Sha = "ABA33D8E0900F0DC75D739FD3B205373413986F856D36AEF03897BEED93225D4" },

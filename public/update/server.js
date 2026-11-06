@@ -308,12 +308,27 @@ app.get("/api/room", (req, res) =>
 app.post("/api/room/command", (req, res) => {
   if (!pinOk(req)) return res.status(401).json({ error: "bad pin" });
   const { command, persona } = req.body || {};
-  const known = ["start", "end", "skip", "close", "open", "pick"];
+  const known = ["start", "end", "skip", "close", "open", "pick", "tune", "reload"];
   if (!known.includes(command)) return res.status(400).json({ error: "unknown command" });
   if (command === "pick" && !ROTATION.includes(persona)) {
     return res.status(400).json({ error: "unknown persona" });
   }
-  pending = { command, persona: persona || null };
+  // tune carries live display settings. Whitelisted, numbers and short strings only:
+  // this ends up driving CSS on the stand screen, so nothing arbitrary goes through.
+  let params = null;
+  if (command === "tune") {
+    const allow = ["framing", "fill", "ox", "sim", "smooth", "spill", "bg"];
+    const src = (req.body && req.body.params) || {};
+    params = {};
+    for (const k of allow) {
+      if (src[k] == null) continue;
+      const v = String(src[k]).slice(0, 24);
+      if (!/^[A-Za-z0-9.#-]+$/.test(v)) continue;
+      params[k] = v;
+    }
+    if (!Object.keys(params).length) return res.status(400).json({ error: "tune needs at least one of: " + allow.join(", ") });
+  }
+  pending = { command, persona: persona || null, params };
   res.json({ ok: true, queued: pending });
 });
 

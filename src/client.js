@@ -288,7 +288,25 @@ function standPick(id) {
   setStandState(stand.state);
 }
 
-function standCommand(c, persona) {
+// Applied live, with no reload and no interruption - safe to use mid-consult.
+// Framing is re-applied from the overrides; the key has always had a live setter.
+function standTune(params) {
+  if (!params) return;
+  for (const k of ["framing", "fill", "ox"]) if (params[k] != null) tuneOverrides[k] = String(params[k]);
+  try { applyFraming(state.persona); } catch (e) {}
+  const c = {};
+  if (params.sim != null) c.similarity = parseFloat(params.sim);
+  if (params.smooth != null) c.smoothness = parseFloat(params.smooth);
+  if (params.spill != null) c.spill = parseFloat(params.spill);
+  if (params.bg != null) c.background = params.bg;
+  if (chroma && Object.keys(c).length) { try { chroma.set(c); } catch (e) {} }
+  if (params.bg != null) $("#stage").style.background = params.bg;
+  console.log("[tune]", JSON.stringify(tuneOverrides), JSON.stringify(c));
+}
+
+function standCommand(c, persona, params) {
+  if (c === "tune") return standTune(params);
+  if (c === "reload") return location.reload();
   // Separate actions, deliberately. Start while live and End while idle do nothing,
   // so a mis-press can never be destructive.
   if (c === "start") return stand.state === "idle" ? standStart() : undefined;
@@ -331,7 +349,7 @@ function initStand() {
   setInterval(() => {
     fetch("/api/room/command")
       .then((r) => r.json())
-      .then((j) => { if (j.command) standCommand(j.command.command, j.command.persona); })
+      .then((j) => { if (j.command) standCommand(j.command.command, j.command.persona, j.command.params); })
       .catch(() => {});
   }, 1000);
 
@@ -385,12 +403,19 @@ const FRAME_W = 1280, FRAME_H = 720;
 // carries `body.live.consulting #video, #keyed { object-fit:cover !important }`
 // and a plain inline style LOSES to a stylesheet !important. That is why the
 // older ?fit= flag never did anything at the stand.
+// Live overrides pushed in over the control channel. They sit on top of the kiosk
+// URL so a tweak from the phone or from Melbourne beats what the kiosk booted with,
+// and removing it falls back to the URL. Nothing here survives a reload, on purpose:
+// a reboot always returns the room to the state show-start.ps1 describes.
+let tuneOverrides = {};
+
 function framingFor(p) {
   const q = new URLSearchParams(location.search);
+  const g = (k) => (tuneOverrides[k] != null ? tuneOverrides[k] : q.get(k));
   const keyOn = q.get("key") ? q.get("key") !== "0" : config.chroma;
-  let mode = q.get("framing") || "zoom";
+  let mode = g("framing") || "zoom";
   if (mode === "zoom" && !keyOn) mode = "nudge";
-  const n = (k, d) => (q.get(k) != null && !isNaN(parseFloat(q.get(k))) ? parseFloat(q.get(k)) : d);
+  const n = (k, d) => (g(k) != null && !isNaN(parseFloat(g(k))) ? parseFloat(g(k)) : d);
   return {
     mode,
     faceX: Math.max(0, Math.min(1, n("ox", FACE_X[p && p.id] != null ? FACE_X[p.id] : 0.5))),
