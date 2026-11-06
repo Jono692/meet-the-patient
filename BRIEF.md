@@ -2601,3 +2601,54 @@ control page off the **Mac in Melbourne**. It reports `roomId: A`, `displayMode:
 `hasPeer: false`, so it draws one card labelled "Room 1" and looks entirely normal while
 driving nothing at the stand and spending Tavus minutes. It must not be on any host's
 phone. Worth gating or relabelling in the next build.
+
+### 7 Nov 2026, 8.11am, LIVE — Claude Code — Margaret recited Peter's topography. Fixed on Tavus, no PC touched.
+
+**Report from the floor:** "Margaret had Peter's issues." Right face, right voice, wrong clinical
+content.
+
+**Ruled out first, with evidence:** all six live PALs have the right name, face and greeting
+and only their own patient in `system_prompt`; the one post-update consult on Tavus's record
+used Margaret's PAL; `createSession` sends `pal_id` and `face_id` from the same persona and
+no `conversational_context`; `tavus-sync.js` is sequential and keyed by id; `tavus.js`,
+`prompt.js` and `tavus-sync.js` are byte-identical between UPDATE-4 and UPDATE-7; the
+personas.json diff is three `ay-scan` words.
+
+**Root cause:** `shared_rules`, which is prepended to every patient's prompt, included this
+as a worked example of how to describe your scans:
+
+    'The orthoptist said my topography showed some inferior steepening, worse in the right
+    eye than the left.'
+
+That is Peter's `clinical_file.topography`, verbatim, in Margaret's and Rami's prompts.
+Margaret's own file two paragraphs later says "Normal corneal topography". The LLM reached
+for the vivid example. Same block also had "Ask me once I can see the road at night", which
+is Peter's night-driving framing given to all three.
+
+This was NOT introduced by UPDATE-7: the identical line is in UPDATE-4's personas.json.
+Today was the first time a surgeon drilled into Margaret's test results. The block was
+written by Claude Code (30 Oct, "YOUR EYE HISTORY AND TEST RESULTS").
+
+**Fix, 8.11am:** the example sentence removed, replaced with "Only ever describe YOUR OWN
+results from the list below, never anyone else's." "See the road at night" -> "Ask me once
+it's all done". No clinical value added or changed anywhere (rule 5). `personas.json` on the
+Mac updated and committed.
+
+Then `PATCH /v2/pals/{id}` `[{"op":"replace","path":"/system_prompt",...}]` on all six live
+PALs (A and B, all three patients), each read back byte-exact against `buildPrompt()`:
+Peter keeps his own "Inferior steepening" line; Margaret and Rami contain no "steepening"
+at all. `pal_interruptibility` still `low`, `default_face_id` unchanged on all six. The PCs
+reuse their cached PAL ids, so the next consult in either room is on the corrected prompt.
+
+**Latent trap, same shape as last night's:** both PCs' `personas.json` on disk still carry
+the OLD `shared_rules`. Their cache signatures are computed from that file, so a plain
+restart reuses the patched PALs and is safe. But a `tavus-sync.js --push` on a PC after any
+`.env` layer change, or any update that ships a personas.json WITHOUT this fix, rebuilds
+from the old text and brings the leak back. UPDATE-8, whenever it is cut, must ship this
+personas.json (hash to be pinned then).
+
+**General lesson, two instances in one morning:** anything baked into a PAL at build time
+and cached on the PC can be corrected server-side with a PATCH and reaches the rooms on the
+next consult, with nobody at a keyboard. That is the only tuning route that has worked at
+this venue. Worked examples in a shared prompt block must never contain any one patient's
+data.
