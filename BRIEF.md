@@ -2392,3 +2392,52 @@ Still open: Margaret's framing not yet eyeballed on the rotated screen; Room B e
 the screen-height question (eye line lands 0.51 m above the bottom edge of the panel, so
 if the mount is high she looks down at a seated surgeon and only a physical fix helps);
 TAVUS_INTERRUPTIBILITY still high; the venue's proper network port still to arrive.
+
+### 6 Nov 2026 (evening) — Claude Code — end of setup day, and what is on each PC
+
+**On both show PCs now (UPDATE-5 build, rebooted 02:59 UTC):** the portrait framing,
+the prompt, the hard delete, the hold screen, and the phantom-patient fix. Kiosk URL on
+both carries `?fill=0.79`, set by Jono after measuring against the hold video.
+
+**Framing settled by measurement, not opinion.** The hold clip is native 1080x1920 so the
+woman in it sits where she sits: crown 24.5% down the screen, eye line 42% down, head about
+44 cm on a 55" panel. Jono called her height right. The patients were landing 38-44% for the
+crown, roughly 15-18 cm lower. fill 0.88 matches her eye line, fill 0.80 matches her head
+size; he took 0.79 to limit the upscale, since raising them means magnifying a 1280x720
+source on a 1080x1920 panel. Real fix is uncropping at the Tavus end - their API has no
+aspect control, so that is a conversation with Tavus, not a setting.
+
+**The phantom patient** was three faults in the handover: the video element framed by height
+with width:auto collapses to a black bar before its stream reports dimensions; chroma.js
+stop() never blanked the WebGL buffer, so the canvas still held the previous patient and was
+shown again before the new stream drew anything; and applyFraming had already positioned that
+stale frame using the NEW patient's centring, which is why it appeared offset. Fixed in
+UPDATE-5: both layers hidden until the renderer has a frame of the current consult, canvas
+cleared to the stand background on stop, four separate reveal paths including a 4 second
+backstop so a stage cannot sit blank with a voice coming out of it.
+
+**UPDATE-6 EXISTS AND IS NOT INSTALLED.** It adds `tune` and `reload` to the command channel
+the stand already polls every second, applied live with no reload and safe mid-consult:
+framing, fill, ox, sim, smooth, spill, bg. Whitelisted, 24 characters, [A-Za-z0-9.#-], PIN
+required. Overrides do not survive a reload, so a reboot always returns a room to what
+show-start.ps1 says. Server side verified on the Mac. It is staged at
+`/update/UPDATE-6.ps1`, pinned 870CA94E...70EE339.
+
+It missed the window. The enclosure was zipped and Jono had left before it was built. **This
+is the second time remote tuning has been deferred as "too close to the show" and the second
+time that was wrong.** He asked for it repeatedly, it is proven practice on Hello Operator,
+and the cost of not having it was a day of relaying PowerShell commands by photograph to two
+PCs wedged between walls with no screen or keyboard. Install it at the first keyboard
+opportunity; it is one command and a reboot.
+
+**What is remote without it:** start, end, skip, pick, open and close on both rooms, from the
+host phone or from Melbourne, via the room-a / room-b tunnels. Peer relay verified working in
+both directions after the network change.
+
+**For the host tomorrow:** the control page calls them Room 1 and Room 2, not A and B. Close
+and Reopen are the SAME button in the same place and it swaps its own label - press it twice
+and the room goes out of service looking exactly like a crash. That caught Jono out today.
+
+**Open:** install UPDATE-6; TV picture settings (label the HDMI input PC for 4:4:4, picture
+mode to PC/Game, noise reduction and motion processing off); TAVUS_INTERRUPTIBILITY still
+high; four stale Tavus conversations from 3 Nov; Caleb's 4 Nov transcripts.
