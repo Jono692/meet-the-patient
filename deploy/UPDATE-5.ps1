@@ -1,94 +1,32 @@
 <#
-  Meet the Patient - update 4: the prompt, the hard delete, the hold screen and the
-  portrait framing. Run this on each show PC. One pass, nothing room-specific.
+  Meet the Patient - update 5: the phantom patient at the start of a consult.
 
-  THIS REPLACES UPDATE-3. ONE file differs from UPDATE-3: public\app.js.
+  THIS REPLACES UPDATE-4. ONE file differs from UPDATE-4: public\app.js.
+  If UPDATE-4 has already been run on this PC, run this over the top of it. It is
+  the same install and it is idempotent.
 
-    * public\app.js now frames the patient for a PORTRAIT screen. The Tavus feed is
-      1280x720 landscape and their API has no aspect setting, so object-fit:cover on a
-      1080x1920 screen showed only 31.6% of the frame's width - a head edge to edge, and
-      for Margaret, whose head centre sits at 61.4% across rather than the middle, the
-      right of her face off the edge entirely. Head centres measured 5 Nov off the Tavus
-      upload crops: Peter .542, Margaret .614, Rami .489. The page now draws the whole
-      frame at 67.5% of the screen height, sat on the bottom edge, face centred, with the
-      chroma key's own #003595 around it. Landscape screens are untouched.
-      Fallbacks on the kiosk URL, no rebuild needed: ?framing=nudge, ?framing=off,
-      ?fill=, ?ox=. See JOB 2 in deploy\CLAUDE-BRIEF-AUCKLAND.md.
+    * THE PHANTOM. Starting a consult showed, in order, a thin black bar, then the
+      PREVIOUS patient shifted sideways, then the right patient. Three separate
+      causes, all fixed here. Seen at the stand 6 Nov.
 
-  If UPDATE-3 has already been run on this PC, run this over the top of it. It is the
-  same install and it is idempotent.
+      1. The video element is framed by height with width:auto. Before its stream
+         reports any dimensions that collapses to near-zero width - the black bar.
+      2. The WebGL canvas was only ever HIDDEN between consults, never blanked, so
+         it still held the last frame of the previous patient and was shown again
+         before the new stream had drawn anything.
+      3. That stale frame was positioned using the NEW patient's horizontal
+         centring, which is why the old patient appeared offset.
 
-  Carried over from UPDATE-3, which replaced UPDATE-2. Two differences from UPDATE-2:
-    * personas.json carries Caleb Bartolo's changes of 4 November - Margaret and Rami
-      now name the cataract diagnosis when asked what has brought them in, Rami's file
-      reads "no visual field loss" (Alcon's clinical call) and he says his glaucoma
-      ophthalmologist does not do cataract surgery, which is why he was referred on.
-    * the prompt push moved from after the restart to before it. The app reads the PAL
-      cache once at boot, so pushing after a restart left the running app blind to the
-      new entries: it built its own duplicate PAL on the first consult and overwrote
-      them. Measured on the Mac on 4 Nov. The prompt was correct either way - it is the
-      same personas.json - but the push was doing nothing.
+      Both stage layers are now hidden until the renderer has a frame of THIS
+      consult, and the canvas is cleared to the stand background when a consult
+      ends. Four separate paths can reveal the stage, including a 4 second
+      backstop, so a stage that never gets a frame cannot stay blank.
 
-  The T7's "5 Update 2" folder still holds the OLD personas.json, so -FromFolder against
-  it will stop on that hash and change nothing. Refresh the folder from iCloud first, or
-  use the tunnel.
+  Everything else is exactly as UPDATE-4 shipped it: the portrait framing, the
+  prompt, the hard delete and the hold screen. Framing knobs are unchanged and
+  still live on the kiosk URL: ?fill=, ?ox=, ?framing=nudge|off, ?key=0.
 
-    over the tunnel        powershell -ExecutionPolicy Bypass -File UPDATE-4.ps1
-    from the T7, offline   powershell -ExecutionPolicy Bypass -File UPDATE-4.ps1 -FromFolder "D:\MTP-SHOW-KIT\5 Update 2 - prompt, hard delete, hold screen"
-
-  What it changes and why:
-
-    personas.json + providers\prompt.js   THE PROMPT. Both, not just personas.json.
-        The prompt.js on this PC is older than the Mac's and is missing two whole
-        blocks: WHAT YOU WERE TOLD ABOUT YOUR EYES (the patient's own history and
-        test results) and WHAT MATTERS MOST TO YOU (their priorities and the forced
-        choice). With the old prompt.js the patients cannot tell a surgeon their
-        scans and have no priorities to be listened to - which is the activation.
-        personas.json also carries 3 Nov's tightening: the AI question, no ratings
-        or scores, a friend's lens described but never how it went, medication.
-
-    providers\tavus.js + server.js        HARD DELETE AFTER EVERY CONSULT.
-        Each consult is now ended AND hard deleted from Tavus the moment it
-        finishes, and the outcome is written to events.jsonl as session-deleted or
-        session-not-deleted. Nothing a surgeon says stays on Tavus's servers.
-
-    public\app.js + public\idle\hold.mp4  THE HOLD SCREEN.
-        The approved between-consults loop. app.js looks for ONE clip at
-        /idle/hold.mp4 instead of the three per-patient ones, so both files go or
-        neither. Static files: the app does not need them, the kiosk browser does,
-        and it only picks them up on a REBOOT. The script says so again at the end.
-
-    public\control\index.html + alcon.png  THE PHONE PAGE AND THE LOGO.
-        Already on both show PCs from UPDATE.ps1 on 3 Nov, so on those two this is a
-        no-op that rewrites the same bytes. They are in here for the SPARE: a PC built
-        from the USB stick has neither, and UPDATE.ps1 can no longer bring it current
-        because its server.js fingerprint is now the old one. This script is the only
-        one to run.
-
-    CLAUDE.md + deploy\CLAUDE-BRIEF-AUCKLAND.md   THE BRIEF FOR CLAUDE CODE ON THIS PC.
-        The CLAUDE.md on these machines came off the USB stick and is the Mac's: it says
-        Claude Code is on the Mac mini and tells it to run "npm start", which here would
-        start a second app fighting the running one for port 3000. Replaced with one
-        written for a show PC - do not restart mid-consult, Node is not on PATH, Edge not
-        Chrome, show-start.ps1 not deploy\start.ps1, and how to check the work. The
-        Auckland brief goes in beside it.
-
-    tools\                                THREE CHECKS, for this PC.
-        tavus-sync.js         push the prompt to Tavus and read it back
-        tavus-delete-check.js prove a consult really is deleted, on this machine
-        tavus-purge.js        list anything left on the account; --delete clears it
-
-  Safe by design, same as UPDATE.ps1:
-    * Node is located and proven to run BEFORE anything is stopped or changed
-    * every file is downloaded and SHA-256 checked before anything is touched
-    * one bad hash and nothing is changed at all
-    * the originals are copied to deploy\backup-<timestamp>\ first
-    * the app is restarted only between consults, never during one
-    * only the app is restarted - the tunnel and the kiosk browser are left alone
-
-  3 Nov: UPDATE.ps1 v1 stopped the app and then could not start it again, because
-  it called a bare "node". Node is NOT on PATH on these PCs. Never stop something
-  until you have proved you can start it. Hence step 1.
+  AND THEN REBOOT. The kiosk holds the old app.js and F5 is swallowed.
 #>
 
 # -FromFolder runs the whole thing from a folder instead of the tunnel, for Auckland with
@@ -112,7 +50,7 @@ $Files = @(
   @{ Name = "prompt.js";       Url = "prompt.js";                 Dest = "providers\prompt.js";                       Sha = "7AE305BF479B7960E606DA6BAAB2A52171DE322B67B55E80CB2D6393CCBD8DE7" },
   @{ Name = "tavus provider";  Url = "tavus-provider.js";         Dest = "providers\tavus.js";                        Sha = "744F40CFA0ADDA599DFCC719C5E3E5DF55556B9CBB6AF9AD4C466B366A84B651" },
   @{ Name = "server.js";       Url = "server.js";                 Dest = "server.js";                                 Sha = "6AAD4243CE078D8166C4FD7EF69ACDECAC9C3E35EF7F33A26C375B61C139208C" },
-  @{ Name = "stand page";      Url = "app.js";                    Dest = "public\app.js";                             Sha = "07F56BA37503F108AC61D57F0AE4389CBFB6580BFAD94195E57FDE1A3E7102EA" },
+  @{ Name = "stand page";      Url = "app.js";                    Dest = "public\app.js";                             Sha = "514ABE9936626E6AD795419D89574DEAB39EFD9FF1374F1B3521E21298224B73" },
   @{ Name = "hold screen";     Url = "hold.mp4";                  Dest = "public\idle\hold.mp4";                      Sha = "1876E7594FD4A1374D286DFDF933D81C5912572160E2D97F90BA56DF439D4DBA" },
   @{ Name = "control page";    Url = "control-index.txt";         Dest = "public\control\index.html";                 Sha = "ED81B677C77CBEE6A314D3171887BFA345023239735DFC818743FE69EEA8B514" },
   @{ Name = "Alcon logo";      Url = "alcon.png";                 Dest = "public\control\alcon.png";                  Sha = "ABA33D8E0900F0DC75D739FD3B205373413986F856D36AEF03897BEED93225D4" },

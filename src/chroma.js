@@ -127,6 +127,7 @@ export function startChroma(video, canvas, opts = {}) {
 
   let raf = 0;
   let stopped = false;
+  let drawn = false;
 
   const draw = () => {
     if (stopped) return;
@@ -151,11 +152,29 @@ export function startChroma(video, canvas, opts = {}) {
     gl.uniform1f(u.smoothness, state.smoothness);
     gl.uniform1f(u.spill, state.spill);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+    // The canvas now holds a frame of THIS consult. Until this moment it still
+    // held the last frame of the PREVIOUS one, which is what put the wrong
+    // patient on the stand screen for a beat at the start of every consult.
+    if (!drawn) {
+      drawn = true;
+      try { opts.onFirstFrame && opts.onFirstFrame(); } catch (e) {}
+    }
   };
   draw();
 
   return {
-    stop() { stopped = true; cancelAnimationFrame(raf); },
+    stop() {
+      stopped = true;
+      cancelAnimationFrame(raf);
+      // Blank the buffer. Hiding the canvas is not enough - it keeps the last
+      // frame it drew, and the next consult shows that frame before its own
+      // first one lands. Clear to the stand background so there is nothing to see.
+      try {
+        gl.clearColor(state.bg[0], state.bg[1], state.bg[2], 1);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+      } catch (e) {}
+    },
     // Live tuning from the console: __chroma.set({ similarity: 0.42 })
     set(p) {
       if (p.background) state.bg = hexToRgb(p.background);

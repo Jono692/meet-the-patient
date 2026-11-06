@@ -1,8 +1,8 @@
-MEET THE PATIENT - UPDATE 4
+MEET THE PATIENT - UPDATE 5
 Prepared on the Mac mini, 5 Nov 2026. Everything here is verified against SHA256SUMS.txt
 and was checked byte-for-byte through the tunnel the same way the PCs will fetch it.
 
-UPDATE 4 REPLACES UPDATE 3, WHICH REPLACED UPDATE 2. RUN UPDATE-4.ps1 AND NOTHING ELSE.
+UPDATE 5 REPLACES UPDATE 4, WHICH REPLACED UPDATE 2. RUN UPDATE-5.ps1 AND NOTHING ELSE.
 UPDATE-3.ps1 and UPDATE-2.ps1 have been withdrawn from this folder on purpose.
 
 ONE file differs from UPDATE 3: public\app.js.
@@ -44,7 +44,7 @@ CARRIED OVER FROM UPDATE 3. Two differences from UPDATE 2:
                         personas.json - but the push was doing nothing.
 
 If you are holding the T7's "5 Update 2" folder, its personas.json is the OLD one. Running
-UPDATE-4.ps1 with -FromFolder against it will stop on that hash and change nothing, which
+UPDATE-5.ps1 with -FromFolder against it will stop on that hash and change nothing, which
 is the check working. Refresh the folder from iCloud first, or use the tunnel.
 
 WHAT IT CHANGES
@@ -84,12 +84,12 @@ HOW TO APPLY IT
   Over the tunnel, while the Mac is up - one line in PowerShell as Administrator. This
   checks the script's own fingerprint and refuses to run it if it does not match:
 
-    $ErrorActionPreference="Stop";[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$f="$env:TEMP\UPDATE-4.ps1";iwr "https://demo.meetthepatient.com.au/update/UPDATE-4.ps1?v=$(Get-Random)" -OutFile $f -UseBasicParsing -Headers @{Accept="*/*"};if((Get-FileHash $f -Algorithm SHA256).Hash -ne "8929EA4125DCA8DC6FB7301D81477E082658ECBB379519F2EAC4C3FEDF501BB6"){throw "UPDATE-4.ps1 does not match. Nothing has been run."};powershell -ExecutionPolicy Bypass -File $f
+    $ErrorActionPreference="Stop";[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$f="$env:TEMP\UPDATE-5.ps1";iwr "https://demo.meetthepatient.com.au/update/UPDATE-5.ps1?v=$(Get-Random)" -OutFile $f -UseBasicParsing -Headers @{Accept="*/*"};if((Get-FileHash $f -Algorithm SHA256).Hash -ne "61AA52F011CE87419DDB7876E6B420CD96BF47D863117089A0F7534D53A0EB78"){throw "UPDATE-5.ps1 does not match. Nothing has been run."};powershell -ExecutionPolicy Bypass -File $f
 
   From this folder on the T7, with no internet - same script, local files. Only after the
   folder has been refreshed with the new personas.json and brief:
 
-    powershell -ExecutionPolicy Bypass -File "<this folder>\UPDATE-4.ps1" -FromFolder "<this folder>"
+    powershell -ExecutionPolicy Bypass -File "<this folder>\UPDATE-5.ps1" -FromFolder "<this folder>"
 
   The -FromFolder route needs no fingerprint typed in by hand: the script checks all
   thirteen files against their own SHA-256 as it copies them. Either way it finds and runs

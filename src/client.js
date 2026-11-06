@@ -154,6 +154,7 @@ function clearStage() {
   document.body.classList.remove("keyed");
   $("#video").removeAttribute("style");
   $("#keyed").removeAttribute("style");
+  setStageVisible(false);
   const q = new URLSearchParams(location.search);
   $("#stage").style.background = q.get("bg") || config.background || "#003595";
 }
@@ -397,10 +398,34 @@ function framingFor(p) {
   };
 }
 
+// Both stage layers stay hidden until the renderer has a frame of THIS consult.
+// Without this the stand showed, in order: a thin black bar (the video element
+// framed before it has any dimensions), then the previous patient (the canvas
+// still holding its last frame, offset by the NEW patient's centring), then the
+// right patient. Measured at the stand on 6 Nov.
+let stageVisible = true;
+function setStageVisible(v) {
+  stageVisible = v;
+  [$("#video"), $("#keyed")].forEach((el) =>
+    el.style.setProperty("visibility", v ? "visible" : "hidden", "important"));
+}
+
+// Never leave the stage blank for ever. If no frame ever arrives we would rather
+// show whatever there is than a blue screen with a voice coming out of it.
+function revealOnFirstVideoFrame() {
+  const v = $("#video");
+  let done = false;
+  const go = () => { if (done) return; done = true; setStageVisible(true); };
+  if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(go);
+  else v.addEventListener("loadeddata", go, { once: true });
+  setTimeout(go, 4000);
+}
+
 function applyFraming(p) {
   const stage = $("#stage");
   const els = [$("#video"), $("#keyed")];
   els.forEach((el) => el.removeAttribute("style"));
+  els.forEach((el) => el.style.setProperty("visibility", stageVisible ? "visible" : "hidden", "important"));
   const { mode, faceX, fill } = framingFor(p);
   if (mode === "off") return;
   const w = stage.clientWidth, h = stage.clientHeight;
@@ -550,7 +575,7 @@ function startBackground() {
   if (chroma) { chroma.stop(); chroma = null; }
   const q = new URLSearchParams(location.search);
   const on = q.get("key") ? q.get("key") !== "0" : config.chroma;
-  if (!on) return;
+  if (!on) { revealOnFirstVideoFrame(); return; }
   const num = (k, d) => (q.get(k) != null ? parseFloat(q.get(k)) : d);
   try {
     chroma = startChroma($("#video"), $("#keyed"), {
@@ -559,8 +584,10 @@ function startBackground() {
       similarity: num("sim", config.similarity),
       smoothness: num("smooth", config.smoothness),
       spill: num("spill", config.spill),
+      onFirstFrame: () => setStageVisible(true),
     });
     document.body.classList.add("keyed");
+    setTimeout(() => setStageVisible(true), 4000);
     // The background is ours now, so the stage can match it. On a portrait
     // screen that means ?fit=contain shows the whole frame with blue either
     // side, instead of cropping into the face.
@@ -572,6 +599,9 @@ function startBackground() {
     window.__chroma = chroma;
   } catch (e) {
     console.warn("chroma key unavailable, showing the raw stream", e);
+    // The layers are hidden until a frame arrives. If the key never started,
+    // nothing would ever reveal them, so fall back to the video's own frame.
+    revealOnFirstVideoFrame();
   }
 }
 
@@ -579,6 +609,7 @@ async function end() {
   try { await state.av?.stop(); } catch {}
   if (chroma) { chroma.stop(); chroma = null; }
   document.body.classList.remove("keyed");
+  setStageVisible(false);
   state.av = null;
   // On the stand there is no picker to go back to: the screen stays on the stage and
   // the idle loop takes over.
