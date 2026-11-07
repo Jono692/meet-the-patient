@@ -2805,3 +2805,12 @@ soft wind-down before the cap; the `|| state.personas[0]` fallback; demo/control
   .bat files, README one-liner, SHA256SUMS). README says FOUR files differ. tonight.txt
   lists the button. All six served files verified byte-for-byte through the tunnel.
 - The Mac serves the new control page already (static file). The PCs get it tonight.
+
+## 7 Nov 2026, 5pm NZ - day 1 final tally, day 2 timing
+
+- Final day 1: 36 consults, 153 min (A 18/89 min, B 18/64 min). Margaret 16, Peter 11,
+  Rami 9. Ten hit the 7-minute cap. Last consult 4.43pm on A.
+- Day 2 (Sun 8 Nov): doors 8am NZ. Jono is not going in for the open; the IOL managers run
+  the stand. Melbourne checks both rooms from here after 8am NZ (6am AEDT) and reports.
+- UPDATE-8 install still tonight after close, via the pasted PowerShell one-liner (hash
+  257C5E77...), not the .bat. Room B first.
