@@ -2814,3 +2814,26 @@ soft wind-down before the cap; the `|| state.personas[0]` fallback; demo/control
   the stand. Melbourne checks both rooms from here after 8am NZ (6am AEDT) and reports.
 - UPDATE-8 install still tonight after close, via the pasted PowerShell one-liner (hash
   257C5E77...), not the .bat. Room B first.
+
+## 7 Nov 2026, 5.30pm NZ - UPDATE-8 on both rooms, verified
+
+- Installed via the pasted one-liner (hash 257C5E77...), Room B 5.04pm, Room A 5.13pm NZ.
+  Both verified from Melbourne: reachable, config (live, transcripts off, hasPeer), new
+  control page served (763441B4...), three new PALs each at low with the leak fix, relay
+  both directions, stand page collecting commands (no-op `pick margaret` test).
+- What step 7 does on the PCs that the script did not expect: it kills the app by pid and
+  starts its own copy. The Windows logon task sees its child die and re-runs show-start.ps1
+  (B at +3 min, A at +1 min), which starts the app again under the task, as after a reboot.
+  On B the Edge kiosk survived that. On A it did not come up; show-start.log from that run
+  was overwritten by the next one, so the reason is not known. Jono ran
+  `powershell -ExecutionPolicy Bypass -File C:\meet-the-patient\show-start.ps1` by hand
+  (kiosk up, 5.19pm), then rebooted A (5.22pm), which came up correctly.
+- I told Jono that B's app was running from the installer's start. Wrong: B's task had
+  already re-run the launcher at 5.07pm. Both rooms are under the task. No B reboot needed.
+- I gave a Chrome launch line from deploy/start.ps1. Wrong: the PCs run Edge from
+  show-start.ps1, which exists only on the PCs. deploy/start.ps1 is obsolete and should
+  be deleted or marked so in the repo.
+- Note for the next updater: a no-reboot update must expect the logon task to re-run the
+  launcher after step 7, or stop the app with restart.flag instead of a kill. Either way,
+  tell the person at the keyboard that the kiosk may need the launcher run by hand.
+- End of day: A idle, B closed (Jono closed it 5.14pm). PC clocks are on AEDT, not NZ.
