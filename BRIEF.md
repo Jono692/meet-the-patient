@@ -2785,7 +2785,7 @@ soft wind-down before the cap; the `|| state.personas[0]` fallback; demo/control
   Room A had a Peter consult running (started 4.15pm, 58s before the send); I sent without
   re-checking state. That consult ended at 4.17pm after 100s with session-deleted logged,
   no orphan. Unknown whether the reload or the manager ended it. Jono: "Fixed thanks".
-- On-floor fallback if it recurs: clicker third button (F5) between consults.
+- Fallback if it recurs: text Melbourne, I send `reload` once the room is idle. The control page has no reload button and there is no clicker.
 - Tonight: if it recurred, reboot both PCs after UPDATE-8 to reset GPU state.
 - Day 1 tally at 4.06pm: 32 consults, 137 min (A 16/81, B 16/56); Margaret 14, Rami 10,
   Peter 8; 8 hit the 7-minute cap; no other errors.
