@@ -2836,4 +2836,5 @@ soft wind-down before the cap; the `|| state.personas[0]` fallback; demo/control
 - Note for the next updater: a no-reboot update must expect the logon task to re-run the
   launcher after step 7, or stop the app with restart.flag instead of a kill. Either way,
   tell the person at the keyboard that the kiosk may need the launcher run by hand.
-- End of day: A idle, B closed (Jono closed it 5.14pm). PC clocks are on AEDT, not NZ.
+- End of day: both rooms closed by Jono from the phone page, confirmed from Melbourne.
+  Doors 8am Sunday; Melbourne checks after that and reports. PC clocks are on AEDT, not NZ.
