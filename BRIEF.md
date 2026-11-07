@@ -2774,3 +2774,20 @@ from each side, and no `sweep-not-deleted` rows.
 Not in UPDATE-8, still on the backlog above: control page without the relay (CORS);
 soft wind-down before the cap; the `|| state.personas[0]` fallback; demo/control gating.
 `deploy/install.ps1` now writes 600 for any rebuild.
+
+## 7 Nov 2026, 4.30pm NZ - green screen on the stand, reloaded from Melbourne
+
+- 4.08pm Jono reported the last three consults showing Peter on raw green with the Alcon
+  blue band above (photo). Diagnosis from the photo: the WebGL chroma keyer in the stand
+  page had stopped; framing was still applied, so the raw stream showed through. Cause not
+  established (no browser console from Melbourne).
+- Fix: `reload` command sent to both stand pages via /api/room/command. Room B was idle.
+  Room A had a Peter consult running (started 4.15pm, 58s before the send); I sent without
+  re-checking state. That consult ended at 4.17pm after 100s with session-deleted logged,
+  no orphan. Unknown whether the reload or the manager ended it. Jono: "Fixed thanks".
+- On-floor fallback if it recurs: clicker third button (F5) between consults.
+- Tonight: if it recurred, reboot both PCs after UPDATE-8 to reset GPU state.
+- Day 1 tally at 4.06pm: 32 consults, 137 min (A 16/81, B 16/56); Margaret 14, Rami 10,
+  Peter 8; 8 hit the 7-minute cap; no other errors.
+- Lesson: check /api/room state in its own step immediately before any command to a
+  stand page, never in the same script that sends it.
