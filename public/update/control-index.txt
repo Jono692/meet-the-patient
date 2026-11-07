@@ -47,7 +47,7 @@
   button:active { transform:translateY(1px); }
   button:disabled { opacity:.3; }
   .go { background:var(--live); } .stop { background:var(--bad); }
-  .minor { grid-column:1 / -1; display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:2px; }
+  .minor { grid-column:1 / -1; display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:2px; }
   .minor button { padding:11px; font-size:13px; font-weight:600; background:#161f2d; color:var(--dim); }
 
   .err { margin-top:11px; font-size:13px; color:#ffb4b4; background:#2b1414; border-radius:9px;
@@ -121,13 +121,13 @@ function card(r) {
     '<div class="head"><span class="id"></span><span class="pill"></span><span class="clock"></span></div>' +
     '<div class="who">Next patient</div><div class="picks"></div>' +
     '<div class="acts"><button class="go start">Start</button><button class="stop end">End</button>' +
-    '<div class="minor"><button class="skip">Skip</button><button class="shut"></button></div></div>' +
+    '<div class="minor"><button class="skip">Skip</button><button class="reload">Reload</button><button class="shut"></button></div></div>' +
     '<div class="err"></div>';
   document.getElementById("rooms").appendChild(d);
   var e = {
     id: d.querySelector(".id"), pill: d.querySelector(".pill"), clock: d.querySelector(".clock"),
     picks: d.querySelector(".picks"), start: d.querySelector(".start"), end: d.querySelector(".end"),
-    skip: d.querySelector(".skip"), shut: d.querySelector(".shut"), err: d.querySelector(".err"),
+    skip: d.querySelector(".skip"), reload: d.querySelector(".reload"), shut: d.querySelector(".shut"), err: d.querySelector(".err"),
     buttons: {}
   };
   e.id.textContent = r.label;
@@ -141,6 +141,11 @@ function card(r) {
   e.start.onclick = function () { send(r, "start"); };
   e.end.onclick = function () { send(r, "end"); };
   e.skip.onclick = function () { send(r, "skip"); };
+  // The stand page reloads itself: the fix for a green screen (the keyer stopped) or a
+  // stuck page, without anyone reaching the PC. Greyed out while a consult is running.
+  e.reload.onclick = function () {
+    if (confirm("Reload the " + r.label + " screen? Only between consults.")) send(r, "reload");
+  };
   e.shut.onclick = function () { send(r, e.shutState === "closed" ? "open" : "close"); };
   return e;
 }
@@ -151,7 +156,7 @@ function render(r, data) {
   if (off) {
     e.pill.className = "pill offline"; e.pill.textContent = "offline";
     e.clock.textContent = ""; e.clock.className = "clock";
-    [e.start, e.end, e.skip, e.shut].forEach(function (b) { b.disabled = true; });
+    [e.start, e.end, e.skip, e.reload, e.shut].forEach(function (b) { b.disabled = true; });
     Object.keys(e.buttons).forEach(function (k) { e.buttons[k].disabled = true; });
     e.err.className = "err on"; e.err.textContent = "No reply from this room.";
     return;
@@ -164,6 +169,7 @@ function render(r, data) {
   e.start.disabled = live || closed;
   e.end.disabled = !live;
   e.skip.disabled = live;
+  e.reload.disabled = live;
   e.shut.disabled = false;
   e.shutState = data.state;
   e.shut.textContent = closed ? "Reopen stand" : "Close stand";

@@ -54,7 +54,7 @@ $Files = @(
   @{ Name = "server.js";       Url = "server.js";                 Dest = "server.js";                                 Sha = "2CB2DDE0989B4CE1CB9C8E628248406D531118346EEB3062F6BB3D752D55BBC9" },
   @{ Name = "stand page";      Url = "app.js";                    Dest = "public\app.js";                             Sha = "8279EBDA45DFCA1E6009E008676876B56CDF2C20B67975053BF927D348199334" },
   @{ Name = "hold screen";     Url = "hold.mp4";                  Dest = "public\idle\hold.mp4";                      Sha = "1876E7594FD4A1374D286DFDF933D81C5912572160E2D97F90BA56DF439D4DBA" },
-  @{ Name = "control page";    Url = "control-index.txt";         Dest = "public\control\index.html";                 Sha = "ED81B677C77CBEE6A314D3171887BFA345023239735DFC818743FE69EEA8B514" },
+  @{ Name = "control page";    Url = "control-index.txt";         Dest = "public\control\index.html";                 Sha = "763441B4D3155E39C314E6F590213CF795BC46ED68BE10110A80C072A33CDB75" },
   @{ Name = "Alcon logo";      Url = "alcon.png";                 Dest = "public\control\alcon.png";                  Sha = "ABA33D8E0900F0DC75D739FD3B205373413986F856D36AEF03897BEED93225D4" },
   @{ Name = "tavus-sync";      Url = "tavus-sync.js";             Dest = "tools\tavus-sync.js";                       Sha = "20BCAB31BE7D6EFE15EB4F0A44C325F33EB5759B9EF0477BA1C786DA58C27B23" },
   @{ Name = "delete-check";    Url = "tavus-delete-check.js";     Dest = "tools\tavus-delete-check.js";               Sha = "267FBA073066773A040278AF119BC51843FF3EF7B7BAC27E1BF59152D132D352" },

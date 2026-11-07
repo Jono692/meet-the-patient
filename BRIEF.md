@@ -2791,3 +2791,17 @@ soft wind-down before the cap; the `|| state.personas[0]` fallback; demo/control
   Peter 8; 8 hit the 7-minute cap; no other errors.
 - Lesson: check /api/room state in its own step immediately before any command to a
   stand page, never in the same script that sends it.
+
+## 7 Nov 2026, 4.50pm NZ - Reload button on the control page, UPDATE-8 re-pinned
+
+- Jono: "we add a reload button". Done. `public/control/index.html` gets a Reload button in
+  the minor row next to Skip (row now three columns). Sends the existing `reload` command
+  (this PC's slot, or the other room's through the relay). Disabled while that room is
+  live, confirm() before sending. Rendered and checked on the Mac's own control page at
+  375px: idle shows Skip / Reload / Close stand all enabled.
+- Not tested: the disabled state during a live consult (would cost a Tavus consult on the
+  Mac). It is the same `disabled = live` line Skip uses.
+- UPDATE-8 re-pinned: control-index 763441B4..., UPDATE-8.ps1 now 257C5E77... (both
+  .bat files, README one-liner, SHA256SUMS). README says FOUR files differ. tonight.txt
+  lists the button. All six served files verified byte-for-byte through the tunnel.
+- The Mac serves the new control page already (static file). The PCs get it tonight.

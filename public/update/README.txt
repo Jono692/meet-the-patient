@@ -6,7 +6,7 @@ the PCs fetch it.
 UPDATE 8 REPLACES UPDATE 7. RUN UPDATE-8.ps1 AND NOTHING ELSE. UPDATE-7.ps1 has been
 withdrawn from this folder on purpose. Idempotent over 7, 6, 5 and 4.
 
-THREE files differ from UPDATE 7, and the script now also edits two lines of .env and
+FOUR files differ from UPDATE 7, and the script now also edits two lines of .env and
 pins three hostnames in the hosts file. app.js is UNCHANGED, so NO REBOOT this time.
 
   personas.json         THE PROMPT LEAK. shared_rules, which every patient gets, carried
@@ -32,6 +32,13 @@ pins three hostnames in the hosts file. app.js is UNCHANGED, so NO REBOOT this t
                         mid-consult never reaches session-end. Happened on Room B at
                         18:42 UTC on 7 Nov. Tested on the Mac on a spare port.
 
+  control\index.html    RELOAD SCREEN button on each room's card, next to Skip. Sends the
+                        existing `reload` command: the stand page reloads itself, which is
+                        the fix for the green screen seen on 7 Nov (the GPU keyer had
+                        stopped; the raw green stream showed through). Greyed out while a
+                        consult is running, asks before sending. Works on the other room's
+                        card too, through the relay. No clicker, no reaching the PC.
+
   .env (two lines)      TAVUS_MAX_CALL_SECONDS=600    consults 7 min -> 10 min (Jono)
                         TAVUS_INTERRUPTIBILITY=low    written if missing
                         Matched as whole lines. Nothing else in .env is read, printed or
@@ -52,7 +59,7 @@ HOW TO APPLY IT - the double-click file is the easy way:
 
   Or the one line in PowerShell as Administrator:
 
-    $ErrorActionPreference="Stop";[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$f="$env:TEMP\UPDATE-8.ps1";iwr "https://demo.meetthepatient.com.au/update/UPDATE-8.ps1?v=$(Get-Random)" -OutFile $f -UseBasicParsing -Headers @{Accept="*/*"};if((Get-FileHash $f -Algorithm SHA256).Hash -ne "B6AF8C02CC8B76FB5050EF3EDFCB7C4C1F30DDE5FFE8DAD94EBD6FFB5CA2D1BA"){throw "UPDATE-8.ps1 does not match. Nothing has been run."};powershell -ExecutionPolicy Bypass -File $f
+    $ErrorActionPreference="Stop";[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$f="$env:TEMP\UPDATE-8.ps1";iwr "https://demo.meetthepatient.com.au/update/UPDATE-8.ps1?v=$(Get-Random)" -OutFile $f -UseBasicParsing -Headers @{Accept="*/*"};if((Get-FileHash $f -Algorithm SHA256).Hash -ne "257C5E7731D718D40CD5F774959A61225386DA67FFA2620CB9D2486B65A5CFB3"){throw "UPDATE-8.ps1 does not match. Nothing has been run."};powershell -ExecutionPolicy Bypass -File $f
 
   From a folder with no internet:
 

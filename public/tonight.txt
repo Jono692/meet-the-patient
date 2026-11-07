@@ -8,6 +8,8 @@ WHAT IT DOES (details in demo.meetthepatient.com.au/update/README.txt)
   - a boot sweep that deletes any consult left on Tavus by a mid-consult reboot
   - hosts pins for room-a and room-b, so each room's host page can show the other room
   - hold.mp4 not re-downloaded; the update is ~1 MB, not 17
+  - a RELOAD SCREEN button on the control page, for the green screen; greyed out
+    while a consult is running
   - NO REBOOT. app.js did not change. The app restarts itself.
 
 ONE ROOM AT A TIME. Do Room B first (it is the one the surgeons have been using), check
