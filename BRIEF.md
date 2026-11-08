@@ -2839,3 +2839,30 @@ soft wind-down before the cap; the `|| state.personas[0]` fallback; demo/control
 - End of day: both rooms closed by Jono from the phone page, confirmed from Melbourne.
   Doors 8am Sunday; Jono is going in for the open after all. Reopen both rooms from the
   phone page (Reopen stand). PC clocks are on AEDT, not NZ.
+
+## 9 Nov 2026, 11am NZ - interactive client report built (draft)
+
+- Jono asked for an interactive HTML report for Alcon telling the story from the shoot
+  through training to results, plus a next-steps section to open a bigger conversation.
+  Built by Claude Code, published private at https://claude.ai/artifact/Byct8ezkKeyfRevGpv1Xaa
+  Source in the repo at `reports/report.html`, data at `reports/consults.json`.
+- Eight acts: casting gap, the St Kilda shoot, the platform switch, the patients
+  (interactive), the no-recording design, the evidence (interactive chart of all 54
+  sessions), floor feedback (PLACEHOLDERS), next steps (interactive, unpriced).
+- SHOW DATA, read from both PCs: 54 sessions over the three show days, 224 minutes.
+  42 ran 60s or more; median of those 5:38, mean 5:12, longest 10:07 (Margaret, Room B,
+  Sun 2.06pm). 13 reached the cap. Day 1 36 sessions/153 min, day 2 16/70, day 3 in
+  progress. The 12 under a minute are warm-ups and are excluded from the median and shown
+  in outline on the chart. Earlier in the day I quoted a 4:35 median to Jono; that included
+  the warm-ups and was the wrong set.
+- NOT IN THE REPORT, on purpose: margins, the WTS cost split, cast fees, vendor pricing,
+  target lens per persona, any clinical values (rule 5), and any file panel / reveal /
+  nudge material (rule 6, job not signed off yet).
+- OPEN: the qualitative half is empty. Three placeholder slots for IOL Manager and surgeon
+  quotes, marked "to be supplied". The two themes reported from the floor (felt real; asked
+  to use it at home to practise) are in the report as floor feedback, not as findings, and
+  need a named attribution before this goes to Alcon. Quotes must be collected before
+  pack-down today.
+- FOR COWORK: Claude Code built the page; the narrative copy and how this is positioned to
+  Alcon is yours. The words in it are a first pass, not approved client copy. Tell Jono if
+  you would rather own the whole deliverable so we do not build two.

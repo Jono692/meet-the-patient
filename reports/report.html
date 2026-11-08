@@ -1,0 +1,643 @@
+<title>Meet the Patient</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;450;600&display=swap">
+
+<style>
+/* Layout: a single-column scroll story in acts. Colour carries the narrative —
+   studio green appears only in the production acts, Alcon blue from the switch onward. */
+:root {
+  --paper:      #F2F5F9;
+  --surface:    #FFFFFF;
+  --ink:        #0B1A33;
+  --muted:      #56688A;
+  --line:       #D5DEEA;
+  --blue:       #003595;
+  --blue-soft:  #E3EAF7;
+  --blue-text:  #003595;
+  --green:      #3E8E41;
+  --green-soft: #E4F1E4;
+  --peter:      #1F6FB2;
+  --margaret:   #BF6A2C;
+  --rami:       #6B5BA6;
+  --shadow:     0 1px 2px rgba(11,26,51,.05), 0 8px 24px -16px rgba(11,26,51,.35);
+
+  --display: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --body:    "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --mono:    "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper:      #080E1A;
+    --surface:    #101B2E;
+    --ink:        #E7EDF7;
+    --muted:      #90A2BF;
+    --line:       #22324C;
+    --blue:       #7AA7F5;
+    --blue-soft:  #152947;
+    --blue-text:  #9CBEFB;
+    --green:      #6CC074;
+    --green-soft: #15291A;
+    --peter:      #5AA3DE;
+    --margaret:   #E09457;
+    --rami:       #9C8CD6;
+    --shadow:     0 1px 2px rgba(0,0,0,.4), 0 10px 30px -18px rgba(0,0,0,.9);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper:      #080E1A;
+  --surface:    #101B2E;
+  --ink:        #E7EDF7;
+  --muted:      #90A2BF;
+  --line:       #22324C;
+  --blue:       #7AA7F5;
+  --blue-soft:  #152947;
+  --blue-text:  #9CBEFB;
+  --green:      #6CC074;
+  --green-soft: #15291A;
+  --peter:      #5AA3DE;
+  --margaret:   #E09457;
+  --rami:       #9C8CD6;
+  --shadow:     0 1px 2px rgba(0,0,0,.4), 0 10px 30px -18px rgba(0,0,0,.9);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap {
+  max-width: 940px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+section { padding-block: 56px; border-top: 1px solid var(--line); }
+section:first-of-type { border-top: 0; }
+
+h1, h2, h3 { font-family: var(--display); font-weight: 500; text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(2.4rem, 7vw, 4rem); letter-spacing: -.02em; }
+h2 { font-size: clamp(1.7rem, 4vw, 2.5rem); letter-spacing: -.015em; }
+h3 { font-size: 1.22rem; }
+p { margin: 0; max-width: 64ch; }
+.lede { font-size: clamp(1.05rem, 2.2vw, 1.28rem); color: var(--muted); line-height: 1.55; }
+
+.act {
+  font-family: var(--mono);
+  font-size: .7rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
+}
+.act::after { content: ""; height: 1px; flex: 1; background: var(--line); }
+.act .n { color: var(--blue-text); font-weight: 500; }
+.stack { display: flex; flex-direction: column; gap: 18px; }
+.stack-sm { display: flex; flex-direction: column; gap: 10px; }
+
+/* hero */
+.hero { padding-block: clamp(40px, 8vw, 76px) 48px; }
+.kicker {
+  font-family: var(--mono); font-size: .72rem; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--blue-text); margin-bottom: 20px;
+}
+.hero h1 em { font-style: italic; color: var(--blue-text); }
+.hero .lede { margin-top: 22px; }
+.byline {
+  margin-top: 26px; font-family: var(--mono); font-size: .76rem;
+  color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 18px;
+}
+
+/* figures */
+.figures { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 3px; overflow: hidden; margin-top: 34px; }
+.fig { background: var(--surface); padding: 18px 16px; }
+.fig .v { font-family: var(--display); font-size: clamp(1.9rem, 4.6vw, 2.5rem); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.fig .v small { font-size: .46em; font-family: var(--mono); color: var(--muted); margin-left: 3px; letter-spacing: 0; }
+.fig .k { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-top: 9px; }
+
+/* pull quote / narrative device */
+.turn {
+  border-left: 3px solid var(--blue); padding: 4px 0 4px 20px;
+  font-family: var(--display); font-size: clamp(1.15rem, 2.6vw, 1.5rem);
+  line-height: 1.4; max-width: 46ch;
+}
+.turn.green { border-left-color: var(--green); }
+
+.note { font-size: .86rem; color: var(--muted); max-width: 70ch; }
+.note code, .mono { font-family: var(--mono); font-size: .9em; }
+
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+.two > * { min-width: 0; }
+@media (max-width: 680px) { .two { grid-template-columns: 1fr; } }
+
+/* colour swatch moment */
+.swatches { display: flex; gap: 0; border-radius: 3px; overflow: hidden; border: 1px solid var(--line); margin-top: 6px; }
+.sw { flex: 1; padding: 14px 12px 16px; font-family: var(--mono); font-size: .68rem; line-height: 1.4; min-width: 0; }
+.sw b { display: block; font-weight: 500; font-size: .78rem; }
+.sw.g { background: #3E8E41; color: #fff; }
+.sw.b { background: #003595; color: #fff; }
+
+/* patients */
+.patients { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+.pt {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 4px;
+  padding: 0; text-align: left; font: inherit; color: inherit; cursor: pointer;
+  box-shadow: var(--shadow); display: flex; flex-direction: column; min-width: 0;
+}
+.pt:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.pt .bar { height: 4px; border-radius: 4px 4px 0 0; }
+.pt .in { padding: 16px 16px 18px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.pt .nm { font-family: var(--display); font-size: 1.3rem; display: flex; align-items: baseline; gap: 8px; }
+.pt .nm span { font-family: var(--mono); font-size: .72rem; color: var(--muted); }
+.pt .tag { font-size: .9rem; color: var(--muted); }
+.pt .more { font-family: var(--mono); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; color: var(--blue-text); margin-top: auto; padding-top: 10px; }
+.pt[aria-expanded="true"] .more { color: var(--muted); }
+.pt .body { border-top: 1px dashed var(--line); margin-top: 4px; padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.pt .body p { font-size: .9rem; }
+.pt .body ul { margin: 0; padding-left: 18px; font-size: .88rem; display: flex; flex-direction: column; gap: 6px; }
+.pt .lbl { font-family: var(--mono); font-size: .66rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+
+/* chart */
+.chartbox { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; box-shadow: var(--shadow); overflow: hidden; }
+.chartscroll { overflow-x: auto; }
+.chartscroll svg { display: block; min-width: 680px; width: 100%; height: auto; }
+.readout {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px;
+  padding: 13px 16px; border-top: 1px solid var(--line);
+  font-family: var(--mono); font-size: .76rem; color: var(--muted);
+  min-height: 46px;
+}
+.readout b { font-weight: 500; color: var(--ink); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px; padding: 13px 16px; border-top: 1px solid var(--line); }
+.chip {
+  font: inherit; font-family: var(--mono); font-size: .72rem; cursor: pointer;
+  background: transparent; border: 1px solid var(--line); border-radius: 100px;
+  padding: 4px 11px 4px 8px; color: var(--muted);
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.chip .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.chip[aria-pressed="true"] { color: var(--ink); border-color: currentColor; }
+.chip:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.bar-el { cursor: pointer; }
+.bar-el:focus-visible { outline: 2px solid var(--blue); }
+
+/* quotes */
+.quotes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.q {
+  border: 1px dashed var(--line); border-radius: 4px; padding: 18px 16px;
+  display: flex; flex-direction: column; gap: 12px; background: var(--surface); min-width: 0;
+}
+.q .slot { font-family: var(--display); font-size: 1.1rem; color: var(--muted); font-style: italic; line-height: 1.4; }
+.q .who { font-family: var(--mono); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.pending {
+  display: inline-block; font-family: var(--mono); font-size: .62rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--blue-text); background: var(--blue-soft);
+  padding: 3px 8px; border-radius: 100px; align-self: flex-start;
+}
+
+/* next steps */
+.opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(235px, 1fr)); gap: 14px; }
+.opt {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 4px;
+  padding: 18px 16px; text-align: left; font: inherit; color: inherit; cursor: pointer;
+  display: flex; flex-direction: column; gap: 9px; min-width: 0; box-shadow: var(--shadow);
+}
+.opt:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.opt[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0 1px var(--blue), var(--shadow); }
+.opt .top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.opt h3 { font-size: 1.1rem; }
+.opt .tick {
+  width: 19px; height: 19px; flex: none; border-radius: 50%; border: 1px solid var(--line);
+  display: grid; place-items: center; font-size: .7rem; color: transparent;
+}
+.opt[aria-pressed="true"] .tick { background: var(--blue); border-color: var(--blue); color: #fff; }
+.opt p { font-size: .9rem; color: var(--muted); }
+.opt .req { font-family: var(--mono); font-size: .67rem; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 9px; margin-top: auto; }
+
+.summary {
+  margin-top: 16px; background: var(--blue-soft); border-radius: 4px; padding: 20px 18px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.summary h3 { font-size: 1.05rem; }
+.summary ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 7px; font-size: .92rem; }
+.summary .empty { font-size: .92rem; color: var(--muted); }
+
+footer { padding-block: 40px 56px; border-top: 1px solid var(--line); }
+footer p { font-family: var(--mono); font-size: .74rem; color: var(--muted); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .bar-el rect, .pt, .opt { transition: opacity .18s ease, border-color .18s ease; }
+}
+</style>
+
+<div class="wrap">
+
+  <section class="hero">
+    <div class="kicker">Alcon ANZ &middot; RANZCO 2026 &middot; NZICC Auckland</div>
+    <h1>Surgeons talked to a patient who <em>wasn't there</em> for five and a half minutes each.</h1>
+    <p class="lede">Meet the Patient put three conversational patients into two consult rooms on the Alcon stand. Surgeons asked the questions, the patients answered in character, and nobody was handed a case card. This is how it was built and what it did.</p>
+    <div class="byline">
+      <span>Watch This Space for Alcon ANZ</span>
+      <span>Show days Sat 7 &ndash; Mon 9 Nov 2026</span>
+      <span class="mono" id="stamp">Day three in progress</span>
+    </div>
+
+    <div class="figures">
+      <div class="fig"><div class="v" id="f-consults">42</div><div class="k">Surgeon consults</div></div>
+      <div class="fig"><div class="v" id="f-median">5:38</div><div class="k">Median length</div></div>
+      <div class="fig"><div class="v" id="f-minutes">224<small>min</small></div><div class="k">Total conversation</div></div>
+      <div class="fig"><div class="v" id="f-capped">13</div><div class="k">Ran until we stopped them</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="act"><span class="n">Act 1</span> Casting</div>
+    <div class="stack">
+      <h2>No stock library has a 74-year-old farmer in it.</h2>
+      <p>The first build used an off-the-shelf avatar library: 83 faces, around twenty actual people, nearly all of them between 25 and 45, in suits, in offices. For Peter, a retired farmer still driving unlit back roads after dark, the closest match was a lawyer in a three-piece suit. For a South Asian woman in her fifties there was nothing at all.</p>
+      <p class="turn">A patient who looks nothing like the patient is a prop. The surgeon stops believing in the first ten seconds, and the whole activation becomes a demo of software.</p>
+      <p>So the three patients were cast properly, through StarNow, and filmed. The releases were written for reuse on day one: indefinite term, all territories, explicit consent to synthetic reproduction, with Alcon as licensee. The durable asset is not the avatar, which is a hosted rendering that stops when a subscription stops. It is the master recordings and the releases, and Alcon holds them.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="act"><span class="n">Act 2</span> The shoot</div>
+    <div class="stack">
+      <h2>Three actors, one green cyclorama, ninety seconds each.</h2>
+      <p>Filmed at St Kilda Studios in October. Each patient needed one continuous chest-up take: about thirty seconds talking, then thirty seconds still and silent. The takes came in between 91 and 113 seconds. The same recording trains the face and clones the voice, so the voice you hear on the stand is the actor's own.</p>
+      <p>Then the footage was rejected. The platform we had chosen required a two-minute minimum, and every take fell under it.</p>
+      <p class="turn green">The studio day was not wasted footage. It was wasted on the wrong platform's minimum.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="act"><span class="n">Act 3</span> The switch</div>
+    <div class="stack">
+      <h2>Eleven days out, we changed engines.</h2>
+      <p>The replacement platform trains on one continuous minute, so every take already in hand qualified. Moving cost about a week of rework with eleven days on the clock, and bought three things the first platform could not offer.</p>
+      <div class="two">
+        <div class="stack-sm">
+          <h3>Our own guardrails</h3>
+          <p class="note">The language model became ours to choose and instruct, instead of the vendor's. That is what makes a patient who never names a lens, never diagnoses, and never advises an enforceable rule rather than a hope.</p>
+        </div>
+        <div class="stack-sm">
+          <h3>The green screen became an asset</h3>
+          <p class="note">Filmed on green, the background is replaceable at run time. Every consult was composited onto Alcon blue in the browser, on the graphics card, frame by frame. Change the brand, change one value.</p>
+        </div>
+      </div>
+      <div class="swatches" role="img" aria-label="Studio green at the shoot becomes Alcon blue on the stand screen">
+        <div class="sw g"><b>Studio green</b>what was filmed</div>
+        <div class="sw b"><b>#003595</b>what the surgeon saw</div>
+      </div>
+      <p class="note">Two consult PCs, sealed into the stand wall, each driving a 55&Prime; portrait screen. Both were reachable from Melbourne for the whole show, which is how every fix during the three days was made without opening the wall.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="act"><span class="n">Act 4</span> The patients</div>
+    <div class="stack">
+      <h2>Each one is holding three things back.</h2>
+      <p>The patients were written so the surgeon has to do the asking. Nothing is volunteered up front, there is no case card on screen, and every consult ends the same way: the patient asks what lens the surgeon would choose, so a decision has to be made out loud.</p>
+      <div class="patients" id="patients"></div>
+      <p class="note">Clinical detail and lens mapping sit with Alcon Medical Affairs. What is shown here is the conversation design: what the patient knows, and what the surgeon has to draw out of them.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="act"><span class="n">Act 5</span> In the room</div>
+    <div class="stack">
+      <h2>Nothing was recorded. That was the design, not a limitation.</h2>
+      <div class="two">
+        <div class="stack-sm">
+          <h3>What the system keeps</h3>
+          <p class="note">A count, a timestamp, a duration and which patient was chosen. That is the entire record, and it is what this report is built from.</p>
+        </div>
+        <div class="stack-sm">
+          <h3>What it never had</h3>
+          <p class="note">No transcript, no audio, no video, no identity. Each conversation is ended and hard-deleted from the vendor at the moment the surgeon stands up, and a check runs on every start-up to catch any that a power cut might have left behind.</p>
+        </div>
+      </div>
+      <p>For a medical audience this is the thing that lets a surgeon speak freely to a stranger at a trade stand. It is also why the warm, qualitative half of this report has to come from the people who stood in the room, rather than from the system.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="act"><span class="n">Act 6</span> The evidence</div>
+    <div class="stack">
+      <h2>Every consult on the stand, end to end.</h2>
+      <p>Each column is one conversation. The dashed line is our own time limit, which we raised from seven minutes to ten after the first day because surgeons kept hitting it.</p>
+      <div class="chartbox">
+        <div class="chartscroll"><svg id="chart" viewBox="0 0 900 330" role="img" aria-label="Column chart of every consult on the stand by length"></svg></div>
+        <div class="readout" id="readout"></div>
+        <div class="legend" id="legend"></div>
+      </div>
+      <div class="two">
+        <div class="stack-sm">
+          <h3>Dwell time is the finding</h3>
+          <p class="note">A median of five minutes thirty-eight seconds, with a surgeon choosing to stay. Thirteen consults ran until the software stopped them, including one at ten minutes and seven seconds on the Sunday.</p>
+        </div>
+        <div class="stack-sm">
+          <h3>What is counted</h3>
+          <p class="note">54 sessions were logged across the three show days. The 12 that ran under a minute were warm-ups and restarts between surgeons and are excluded from the median, shown here in outline. Day three was still running when this was generated.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="act"><span class="n">Act 7</span> What they said</div>
+    <div class="stack">
+      <h2>The part the system cannot measure.</h2>
+      <p>Because nothing is recorded, the qualitative response exists only with the people who were standing beside the surgeons. These slots are for the IOL Managers who ran the rooms.</p>
+      <div class="quotes">
+        <div class="q"><span class="pending">To be supplied</span><div class="slot">&ldquo;&hellip;&rdquo;</div><div class="who">IOL Manager &middot; Room 1</div></div>
+        <div class="q"><span class="pending">To be supplied</span><div class="slot">&ldquo;&hellip;&rdquo;</div><div class="who">IOL Manager &middot; Room 2</div></div>
+        <div class="q"><span class="pending">To be supplied</span><div class="slot">&ldquo;&hellip;&rdquo;</div><div class="who">Surgeon &middot; name and hospital</div></div>
+      </div>
+      <p class="note">Two themes were reported from the floor during the show and are repeated here as floor feedback rather than as findings: that the patients felt real to talk to, and that several surgeons asked whether they could use this at home to practise. Both want attributing to a named person before this goes to Alcon.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="act"><span class="n">Act 8</span> Where it goes</div>
+    <div class="stack">
+      <h2>The stand was the proof. The asset is the patient.</h2>
+      <p>What exists now is an engine: written patients, enforceable guardrails, three trained faces with reuse rights, and a room that ran unattended for three days. RANZCO used it as an activation. The more interesting question is what it is for the other fifty-one weeks.</p>
+      <p>Choose any combination to see what each one actually involves.</p>
+      <div class="opts" id="opts"></div>
+      <div class="summary" id="summary"></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Watch This Space &middot; Meet the Patient &middot; prepared for Alcon ANZ</p>
+    <p id="foot-note">Consult figures read directly from both stand PCs. Counts and durations only; no conversation content exists.</p>
+  </footer>
+</div>
+
+<script>
+var CONSULTS = [{"room":"B","t":"2026-11-06T18:45:14.699Z","day":"7/11/2026","hhmm":"07:45","persona":"peter","sec":175,"capped":false},{"room":"B","t":"2026-11-06T19:00:41.513Z","day":"7/11/2026","hhmm":"08:00","persona":"rami","sec":7,"capped":false},{"room":"B","t":"2026-11-06T19:06:27.265Z","day":"7/11/2026","hhmm":"08:06","persona":"margaret","sec":274,"capped":false},{"room":"A","t":"2026-11-06T19:07:19.366Z","day":"7/11/2026","hhmm":"08:07","persona":"peter","sec":275,"capped":false},{"room":"B","t":"2026-11-06T19:21:03.018Z","day":"7/11/2026","hhmm":"08:21","persona":"margaret","sec":22,"capped":false},{"room":"A","t":"2026-11-06T19:24:48.482Z","day":"7/11/2026","hhmm":"08:24","persona":"rami","sec":351,"capped":false},{"room":"A","t":"2026-11-06T19:30:18.344Z","day":"7/11/2026","hhmm":"08:30","persona":"margaret","sec":283,"capped":false},{"room":"A","t":"2026-11-06T19:36:26.306Z","day":"7/11/2026","hhmm":"08:36","persona":"peter","sec":75,"capped":false},{"room":"A","t":"2026-11-06T19:40:38.311Z","day":"7/11/2026","hhmm":"08:40","persona":"margaret","sec":246,"capped":false},{"room":"B","t":"2026-11-06T19:47:39.884Z","day":"7/11/2026","hhmm":"08:47","persona":"margaret","sec":428,"capped":true},{"room":"B","t":"2026-11-06T20:17:31.079Z","day":"7/11/2026","hhmm":"09:17","persona":"margaret","sec":236,"capped":false},{"room":"B","t":"2026-11-06T20:37:07.925Z","day":"7/11/2026","hhmm":"09:37","persona":"peter","sec":426,"capped":true},{"room":"A","t":"2026-11-06T20:59:07.321Z","day":"7/11/2026","hhmm":"09:59","persona":"peter","sec":87,"capped":false},{"room":"B","t":"2026-11-06T20:59:53.966Z","day":"7/11/2026","hhmm":"09:59","persona":"margaret","sec":338,"capped":false},{"room":"A","t":"2026-11-06T21:34:11.969Z","day":"7/11/2026","hhmm":"10:34","persona":"rami","sec":426,"capped":true},{"room":"B","t":"2026-11-06T21:40:25.000Z","day":"7/11/2026","hhmm":"10:40","persona":"margaret","sec":308,"capped":false},{"room":"B","t":"2026-11-06T21:43:00.073Z","day":"7/11/2026","hhmm":"10:43","persona":"peter","sec":136,"capped":false},{"room":"A","t":"2026-11-06T21:43:47.207Z","day":"7/11/2026","hhmm":"10:43","persona":"margaret","sec":426,"capped":true},{"room":"B","t":"2026-11-06T21:45:28.049Z","day":"7/11/2026","hhmm":"10:45","persona":"rami","sec":129,"capped":false},{"room":"B","t":"2026-11-06T21:46:20.993Z","day":"7/11/2026","hhmm":"10:46","persona":"margaret","sec":50,"capped":false},{"room":"A","t":"2026-11-06T21:52:39.722Z","day":"7/11/2026","hhmm":"10:52","persona":"margaret","sec":195,"capped":false},{"room":"B","t":"2026-11-06T22:41:14.050Z","day":"7/11/2026","hhmm":"11:41","persona":"margaret","sec":193,"capped":false},{"room":"A","t":"2026-11-06T23:01:26.112Z","day":"7/11/2026","hhmm":"12:01","persona":"rami","sec":425,"capped":true},{"room":"A","t":"2026-11-06T23:19:18.425Z","day":"7/11/2026","hhmm":"12:19","persona":"margaret","sec":358,"capped":false},{"room":"B","t":"2026-11-06T23:53:50.078Z","day":"7/11/2026","hhmm":"12:53","persona":"margaret","sec":206,"capped":false},{"room":"A","t":"2026-11-06T23:59:42.335Z","day":"7/11/2026","hhmm":"12:59","persona":"rami","sec":291,"capped":false},{"room":"A","t":"2026-11-07T01:03:28.333Z","day":"7/11/2026","hhmm":"14:03","persona":"margaret","sec":115,"capped":false},{"room":"A","t":"2026-11-07T01:27:16.451Z","day":"7/11/2026","hhmm":"14:27","persona":"peter","sec":427,"capped":true},{"room":"A","t":"2026-11-07T01:36:11.291Z","day":"7/11/2026","hhmm":"14:36","persona":"rami","sec":427,"capped":true},{"room":"B","t":"2026-11-07T02:42:18.204Z","day":"7/11/2026","hhmm":"15:42","persona":"margaret","sec":178,"capped":false},{"room":"A","t":"2026-11-07T02:56:28.144Z","day":"7/11/2026","hhmm":"15:56","persona":"rami","sec":427,"capped":true},{"room":"B","t":"2026-11-07T03:03:44.277Z","day":"7/11/2026","hhmm":"16:03","persona":"peter","sec":270,"capped":false},{"room":"A","t":"2026-11-07T03:17:12.895Z","day":"7/11/2026","hhmm":"16:17","persona":"peter","sec":100,"capped":false},{"room":"B","t":"2026-11-07T03:19:31.308Z","day":"7/11/2026","hhmm":"16:19","persona":"peter","sec":32,"capped":false},{"room":"B","t":"2026-11-07T03:31:47.046Z","day":"7/11/2026","hhmm":"16:31","persona":"rami","sec":426,"capped":true},{"room":"A","t":"2026-11-07T03:43:50.218Z","day":"7/11/2026","hhmm":"16:43","persona":"peter","sec":427,"capped":true},{"room":"A","t":"2026-11-07T19:16:21.428Z","day":"8/11/2026","hhmm":"08:16","persona":"rami","sec":25,"capped":false},{"room":"A","t":"2026-11-07T19:17:30.397Z","day":"8/11/2026","hhmm":"08:17","persona":"rami","sec":47,"capped":false},{"room":"A","t":"2026-11-07T19:42:48.921Z","day":"8/11/2026","hhmm":"08:42","persona":"peter","sec":161,"capped":false},{"room":"A","t":"2026-11-07T22:15:02.402Z","day":"8/11/2026","hhmm":"11:15","persona":"peter","sec":10,"capped":false},{"room":"B","t":"2026-11-07T22:20:43.933Z","day":"8/11/2026","hhmm":"11:20","persona":"peter","sec":345,"capped":false},{"room":"B","t":"2026-11-07T22:36:39.957Z","day":"8/11/2026","hhmm":"11:36","persona":"rami","sec":346,"capped":false},{"room":"B","t":"2026-11-07T23:14:17.844Z","day":"8/11/2026","hhmm":"12:14","persona":"rami","sec":350,"capped":false},{"room":"B","t":"2026-11-07T23:48:56.031Z","day":"8/11/2026","hhmm":"12:48","persona":"margaret","sec":368,"capped":false},{"room":"A","t":"2026-11-07T23:49:43.959Z","day":"8/11/2026","hhmm":"12:49","persona":"peter","sec":284,"capped":false},{"room":"B","t":"2026-11-08T01:06:06.068Z","day":"8/11/2026","hhmm":"14:06","persona":"margaret","sec":607,"capped":true},{"room":"A","t":"2026-11-08T01:13:23.790Z","day":"8/11/2026","hhmm":"14:13","persona":"margaret","sec":52,"capped":false},{"room":"A","t":"2026-11-08T01:14:03.033Z","day":"8/11/2026","hhmm":"14:14","persona":"peter","sec":37,"capped":false},{"room":"B","t":"2026-11-08T02:35:23.424Z","day":"8/11/2026","hhmm":"15:35","persona":"peter","sec":607,"capped":true},{"room":"B","t":"2026-11-08T02:56:28.748Z","day":"8/11/2026","hhmm":"15:56","persona":"rami","sec":8,"capped":false},{"room":"B","t":"2026-11-08T03:02:23.011Z","day":"8/11/2026","hhmm":"16:02","persona":"margaret","sec":350,"capped":false},{"room":"B","t":"2026-11-08T03:14:12.443Z","day":"8/11/2026","hhmm":"16:14","persona":"margaret","sec":605,"capped":true},{"room":"A","t":"2026-11-08T18:55:22.107Z","day":"9/11/2026","hhmm":"07:55","persona":"peter","sec":21,"capped":false},{"room":"B","t":"2026-11-08T18:55:28.129Z","day":"9/11/2026","hhmm":"07:55","persona":"margaret","sec":22,"capped":false}];
+
+var PATIENTS = [
+  { id:"peter", name:"Peter Walsh", age:74, colour:"var(--peter)",
+    tag:"Retired farmer. Still working the property, still driving the back roads after dark.",
+    story:"Lives on the property with his wife and still does plenty out there despite supposedly having stopped. Fixes things, works around the sheds, keeps ahead of the jobs. Fishes and camps when he gets the chance.",
+    surface:[
+      "Drives at night on unlit rural roads, and glare at night is a real problem.",
+      "Loses his readers constantly and it irritates him, though he is not asking to be rid of glasses.",
+      "Wants his vision back the way it was so he can keep doing things for himself. No bells and whistles."
+    ]},
+  { id:"margaret", name:"Margaret Ellis", age:62, colour:"var(--margaret)",
+    tag:"Retired English teacher. Three pairs of glasses and thoroughly fed up with all of them.",
+    story:"Busier now than she was when she was working. Reads novels every day, uses the iPad for shopping and the news, plays bingo several times a week, sews and quilts, and goes to the theatre often.",
+    surface:[
+      "Her day is dominated by near and intermediate work: novels, the iPad, sewing and quilting.",
+      "The three pairs of glasses and the constant swapping are the real complaint.",
+      "A neighbour had surgery and needs no glasses at all, and Margaret wants that."
+    ]},
+  { id:"rami", name:"Rami George", age:59, colour:"var(--rami)",
+    tag:"Financial planner, working full time. Eighty per cent of his day is on a screen.",
+    story:"Most of his day is in front of multiple computer screens, and he works from home one day a week on a laptop. Plays golf on the weekend, gardens, takes on projects around the house.",
+    surface:[
+      "About eighty per cent of his working day is on multiple computer screens.",
+      "He commutes daily and often drives home late at night; confidence after dark matters.",
+      "He wants reliable, natural quality of vision rather than freedom from glasses."
+    ]}
+];
+
+var OPTIONS = [
+  { id:"lang", title:"More languages",
+    body:"The patients are written text and a cloned voice. Both travel. The same three people can hold the same consult in another language without being refilmed.",
+    wts:"Conversation rewrite and voice work per language, plus accent testing.",
+    client:"Clinical review of the translated content in each market." },
+  { id:"faces", title:"New patients",
+    body:"Each new patient is a casting call, a ninety-second shoot and a trained face. The written character is the slow part, not the filming.",
+    wts:"Casting, shoot day, character writing, training and testing.",
+    client:"The clinical profile each new patient is built to represent." },
+  { id:"home", title:"Take-home practice",
+    body:"Several surgeons asked for this unprompted. It is a different product from a stand: a login, a usage limit and a bill that moves with how much it is used, rather than a sealed PC in a wall.",
+    wts:"Hosting, accounts, usage controls and a per-minute supply agreement.",
+    client:"Who may access it, and how much use is funded." },
+  { id:"keep", title:"Keep it running",
+    body:"The rooms ran unattended for three days and were maintained from Melbourne. The same two rooms can go to the next congress with new patients instead of a new build.",
+    wts:"Hosting, content updates and on-site support per event.",
+    client:"A calendar of events worth attending." }
+];
+
+function fmt(s) { return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); }
+
+/* ---------- patients ---------- */
+(function () {
+  var host = document.getElementById("patients");
+  PATIENTS.forEach(function (p) {
+    var b = document.createElement("button");
+    b.className = "pt";
+    b.type = "button";
+    b.setAttribute("aria-expanded", "false");
+    b.innerHTML =
+      '<div class="bar" style="background:' + p.colour + '"></div>' +
+      '<div class="in">' +
+        '<div class="nm">' + p.name + ' <span>' + p.age + '</span></div>' +
+        '<div class="tag">' + p.tag + '</div>' +
+        '<div class="body" hidden>' +
+          '<p>' + p.story + '</p>' +
+          '<div class="lbl">The surgeon has to find</div>' +
+          '<ul>' + p.surface.map(function (s) { return "<li>" + s + "</li>"; }).join("") + '</ul>' +
+        '</div>' +
+        '<div class="more">Read the brief</div>' +
+      '</div>';
+    var body = b.querySelector(".body"), more = b.querySelector(".more");
+    b.onclick = function () {
+      var open = b.getAttribute("aria-expanded") === "true";
+      b.setAttribute("aria-expanded", open ? "false" : "true");
+      body.hidden = open;
+      more.textContent = open ? "Read the brief" : "Close";
+    };
+    host.appendChild(b);
+  });
+})();
+
+/* ---------- chart ---------- */
+var chartState = { active: null };
+
+function drawChart() {
+  var svg = document.getElementById("chart");
+  var W = 900, H = 330, padL = 52, padR = 14, padT = 16, padB = 54;
+  var plotW = W - padL - padR, plotH = H - padT - padB;
+  var maxSec = 660;
+  var y = function (s) { return padT + plotH - (s / maxSec) * plotH; };
+
+  var n = CONSULTS.length;
+  var slot = plotW / n;
+  var bw = Math.max(5, Math.min(13, slot - 5));
+  var parts = [];
+
+  // horizontal gridlines at real minute values
+  for (var m = 0; m <= 10; m += 2) {
+    var yy = y(m * 60);
+    parts.push('<line x1="' + padL + '" y1="' + yy.toFixed(1) + '" x2="' + (W - padR) + '" y2="' + yy.toFixed(1) +
+      '" stroke="var(--line)" stroke-width="1"/>');
+    parts.push('<text x="' + (padL - 10) + '" y="' + (yy + 4).toFixed(1) + '" text-anchor="end" fill="var(--muted)" ' +
+      'font-family="IBM Plex Mono, monospace" font-size="11">' + m + ':00</text>');
+  }
+
+  // day bands and the stepped cap line
+  var days = [];
+  CONSULTS.forEach(function (c, i) {
+    var d = days[days.length - 1];
+    if (!d || d.day !== c.day) days.push({ day: c.day, from: i, to: i });
+    else d.to = i;
+  });
+  var dayName = { "7/11/2026": "Saturday 7 Nov", "8/11/2026": "Sunday 8 Nov", "9/11/2026": "Monday 9 Nov" };
+
+  days.forEach(function (d, di) {
+    var x0 = padL + d.from * slot, x1 = padL + (d.to + 1) * slot;
+    if (di > 0) {
+      parts.push('<line x1="' + x0.toFixed(1) + '" y1="' + padT + '" x2="' + x0.toFixed(1) + '" y2="' + (padT + plotH) +
+        '" stroke="var(--line)" stroke-width="1"/>');
+    }
+    // cap line for this day: 7 minutes on day one, 10 from the Sunday
+    var cap = d.day === "7/11/2026" ? 420 : 600;
+    var cy = y(cap);
+    parts.push('<line x1="' + (x0 + 2).toFixed(1) + '" y1="' + cy.toFixed(1) + '" x2="' + (x1 - 2).toFixed(1) + '" y2="' + cy.toFixed(1) +
+      '" stroke="var(--blue)" stroke-width="1.5" stroke-dasharray="5 4" opacity=".85"/>');
+    if (x1 - x0 > 115) {
+      parts.push('<text x="' + (x0 + 6).toFixed(1) + '" y="' + (cy - 7).toFixed(1) + '" fill="var(--blue)" ' +
+        'font-family="IBM Plex Mono, monospace" font-size="10.5">' + (cap / 60) + ' min limit</text>');
+    }
+    // day label
+    var mid = (x0 + x1) / 2;
+    parts.push('<text x="' + mid.toFixed(1) + '" y="' + (padT + plotH + 22) + '" text-anchor="middle" fill="var(--ink)" ' +
+      'font-family="IBM Plex Mono, monospace" font-size="11">' + (dayName[d.day] || d.day) + '</text>');
+    var cnt = d.to - d.from + 1;
+    parts.push('<text x="' + mid.toFixed(1) + '" y="' + (padT + plotH + 38) + '" text-anchor="middle" fill="var(--muted)" ' +
+      'font-family="IBM Plex Mono, monospace" font-size="10">' + cnt + ' session' + (cnt === 1 ? "" : "s") + '</text>');
+  });
+
+  // baseline
+  parts.push('<line x1="' + padL + '" y1="' + (padT + plotH) + '" x2="' + (W - padR) + '" y2="' + (padT + plotH) +
+    '" stroke="var(--muted)" stroke-width="1"/>');
+
+  // columns
+  CONSULTS.forEach(function (c, i) {
+    var x = padL + i * slot + (slot - bw) / 2;
+    var top = y(c.sec), h = Math.max(2, padT + plotH - top);
+    var warm = c.sec < 60;
+    var dim = chartState.active && chartState.active !== c.persona;
+    var fill = warm ? "none" : "var(--" + c.persona + ")";
+    parts.push(
+      '<g class="bar-el" tabindex="0" role="button" data-i="' + i + '" opacity="' + (dim ? ".2" : "1") +
+      '" aria-label="' + c.persona + ', ' + fmt(c.sec) + ', ' + c.hhmm + '">' +
+      '<rect x="' + x.toFixed(1) + '" y="' + top.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) +
+      '" fill="' + fill + '" stroke="var(--' + c.persona + ')" stroke-width="' + (warm ? 1.2 : 0) + '" rx="1"/>' +
+      (c.capped ? '<circle cx="' + (x + bw / 2).toFixed(1) + '" cy="' + (top - 6).toFixed(1) + '" r="2.4" fill="var(--blue)"/>' : "") +
+      '</g>'
+    );
+  });
+
+  svg.innerHTML = parts.join("");
+
+  Array.prototype.forEach.call(svg.querySelectorAll(".bar-el"), function (g) {
+    var show = function () { readout(CONSULTS[+g.dataset.i]); };
+    g.addEventListener("mouseenter", show);
+    g.addEventListener("focus", show);
+    g.addEventListener("click", show);
+  });
+}
+
+function readout(c) {
+  var names = { peter: "Peter Walsh", margaret: "Margaret Ellis", rami: "Rami George" };
+  var el = document.getElementById("readout");
+  if (!c) { el.innerHTML = ""; return; }
+  var tail = c.capped ? "<b>reached the time limit</b>"
+    : (c.sec < 60 ? "warm-up between surgeons" : "ended by the surgeon");
+  el.innerHTML =
+    "<span><b>" + fmt(c.sec) + "</b> with " + names[c.persona] + "</span>" +
+    "<span>Room " + (c.room === "A" ? "1" : "2") + "</span>" +
+    "<span>" + c.hhmm + " on " + c.day.replace(/\/2026$/, "") + "</span>" +
+    "<span>" + tail + "</span>";
+}
+
+(function () {
+  var host = document.getElementById("legend");
+  PATIENTS.forEach(function (p) {
+    var b = document.createElement("button");
+    b.className = "chip"; b.type = "button"; b.setAttribute("aria-pressed", "false");
+    b.innerHTML = '<span class="dot" style="background:' + p.colour + '"></span>' + p.name.split(" ")[0];
+    b.onclick = function () {
+      chartState.active = chartState.active === p.id ? null : p.id;
+      Array.prototype.forEach.call(host.querySelectorAll(".chip"), function (c) {
+        c.setAttribute("aria-pressed", "false");
+      });
+      if (chartState.active) b.setAttribute("aria-pressed", "true");
+      drawChart();
+    };
+    host.appendChild(b);
+  });
+  var note = document.createElement("span");
+  note.className = "chip";
+  note.style.borderStyle = "dashed";
+  note.style.cursor = "default";
+  note.innerHTML = '<span class="dot" style="background:transparent;border:1.2px solid var(--muted)"></span>under a minute';
+  host.appendChild(note);
+})();
+
+/* ---------- next steps ---------- */
+(function () {
+  var host = document.getElementById("opts"), sum = document.getElementById("summary");
+  var chosen = {};
+  function render() {
+    var picked = OPTIONS.filter(function (o) { return chosen[o.id]; });
+    if (!picked.length) {
+      sum.innerHTML = '<h3>Nothing selected</h3><p class="empty">Choose one or more above. Each is a different shape of work, not a bigger version of the same job.</p>';
+      return;
+    }
+    sum.innerHTML =
+      "<h3>" + (picked.length === 1 ? "One direction" : picked.length + " directions") + ", and what each one needs</h3>" +
+      "<ul>" + picked.map(function (o) {
+        return "<li><b>" + o.title + "</b><br>Watch This Space: " + o.wts + "<br>Alcon: " + o.client + "</li>";
+      }).join("") + "</ul>" +
+      '<p class="empty">Scope first, then the commercial conversation. Nothing here is priced on this page.</p>';
+  }
+  OPTIONS.forEach(function (o) {
+    var b = document.createElement("button");
+    b.className = "opt"; b.type = "button"; b.setAttribute("aria-pressed", "false");
+    b.innerHTML =
+      '<div class="top"><h3>' + o.title + '</h3><span class="tick" aria-hidden="true">&#10003;</span></div>' +
+      "<p>" + o.body + "</p>" +
+      '<div class="req">Needs a decision from both sides</div>';
+    b.onclick = function () {
+      chosen[o.id] = !chosen[o.id];
+      b.setAttribute("aria-pressed", chosen[o.id] ? "true" : "false");
+      render();
+    };
+    host.appendChild(b);
+  });
+  render();
+})();
+
+/* ---------- figures from the data ---------- */
+(function () {
+  var real = CONSULTS.filter(function (c) { return c.sec >= 60; });
+  var sorted = real.map(function (c) { return c.sec; }).sort(function (a, b) { return a - b; });
+  var median = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0;
+  var total = CONSULTS.reduce(function (s, c) { return s + c.sec; }, 0);
+  document.getElementById("f-consults").textContent = real.length;
+  document.getElementById("f-median").textContent = fmt(median);
+  document.getElementById("f-minutes").innerHTML = Math.round(total / 60) + "<small>min</small>";
+  document.getElementById("f-capped").textContent = CONSULTS.filter(function (c) { return c.capped; }).length;
+
+  drawChart();
+  // open on the longest consult, so the readout shows what it does
+  var longest = CONSULTS.reduce(function (a, b) { return b.sec > a.sec ? b : a; }, CONSULTS[0]);
+  readout(longest);
+})();
+</script>
