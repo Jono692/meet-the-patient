@@ -203,38 +203,11 @@ p { margin: 0; max-width: 64ch; }
   padding: 3px 8px; border-radius: 100px; align-self: flex-start;
 }
 
-/* next steps */
-.opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(235px, 1fr)); gap: 14px; }
-.opt {
-  background: var(--surface); border: 1px solid var(--line); border-radius: 4px;
-  padding: 18px 16px; text-align: left; font: inherit; color: inherit; cursor: pointer;
-  display: flex; flex-direction: column; gap: 9px; min-width: 0; box-shadow: var(--shadow);
-}
-.opt:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
-.opt[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0 1px var(--blue), var(--shadow); }
-.opt .top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.opt h3 { font-size: 1.1rem; }
-.opt .tick {
-  width: 19px; height: 19px; flex: none; border-radius: 50%; border: 1px solid var(--line);
-  display: grid; place-items: center; font-size: .7rem; color: transparent;
-}
-.opt[aria-pressed="true"] .tick { background: var(--blue); border-color: var(--blue); color: #fff; }
-.opt p { font-size: .9rem; color: var(--muted); }
-.opt .req { font-family: var(--mono); font-size: .67rem; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 9px; margin-top: auto; }
-
-.summary {
-  margin-top: 16px; background: var(--blue-soft); border-radius: 4px; padding: 20px 18px;
-  display: flex; flex-direction: column; gap: 10px;
-}
-.summary h3 { font-size: 1.05rem; }
-.summary ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 7px; font-size: .92rem; }
-.summary .empty { font-size: .92rem; color: var(--muted); }
-
 footer { padding-block: 40px 56px; border-top: 1px solid var(--line); }
 footer p { font-family: var(--mono); font-size: .74rem; color: var(--muted); }
 
 @media (prefers-reduced-motion: no-preference) {
-  .bar-el rect, .pt, .opt { transition: opacity .18s ease, border-color .18s ease; }
+  .bar-el rect, .pt { transition: opacity .18s ease, border-color .18s ease; }
 }
 </style>
 
@@ -242,8 +215,8 @@ footer p { font-family: var(--mono); font-size: .74rem; color: var(--muted); }
 
   <section class="hero">
     <div class="kicker">Alcon ANZ &middot; RANZCO 2026 &middot; NZICC Auckland</div>
-    <h1>Surgeons talked to a patient who <em>wasn't there</em> for five and a half minutes each.</h1>
-    <p class="lede">Meet the Patient put three conversational patients into two consult rooms on the Alcon stand. Surgeons asked the questions, the patients answered in character, and nobody was handed a case card. This is how it was built and what it did.</p>
+    <h1>Before any lens was chosen, the patient <em>had to be heard</em>.</h1>
+    <p class="lede">Meet the Patient put three patients into two consult rooms on the Alcon stand. None of them gave away their life, their priorities or what they wanted from surgery unless the surgeon asked. Over three days surgeons sat down for 42 full consults, at a median of five and a half minutes each. This report covers how the patients were made, how the rooms ran and what the numbers show.</p>
     <div class="byline">
       <span>Watch This Space for Alcon ANZ</span>
       <span>Show days Sat 7 &ndash; Mon 9 Nov 2026</span>
@@ -251,89 +224,71 @@ footer p { font-family: var(--mono); font-size: .74rem; color: var(--muted); }
     </div>
 
     <div class="figures">
-      <div class="fig"><div class="v" id="f-consults">42</div><div class="k">Surgeon consults</div></div>
-      <div class="fig"><div class="v" id="f-median">5:38</div><div class="k">Median length</div></div>
-      <div class="fig"><div class="v" id="f-minutes">224<small>min</small></div><div class="k">Total conversation</div></div>
-      <div class="fig"><div class="v" id="f-capped">13</div><div class="k">Ran until we stopped them</div></div>
+      <div class="fig"><div class="v" id="f-consults">42</div><div class="k">Consults of a minute or longer</div></div>
+      <div class="fig"><div class="v" id="f-median">5:38</div><div class="k">Median consult</div></div>
+      <div class="fig"><div class="v" id="f-minutes">224<small>min</small></div><div class="k">Total conversation, all sessions</div></div>
+      <div class="fig"><div class="v" id="f-capped">13</div><div class="k">Ran to the time limit</div></div>
     </div>
   </section>
 
   <section>
-    <div class="act"><span class="n">Act 1</span> Casting</div>
+    <div class="act"><span class="n">Act 1</span> The brief</div>
     <div class="stack">
-      <h2>No stock library has a 74-year-old farmer in it.</h2>
-      <p>The first build used an off-the-shelf avatar library: 83 faces, around twenty actual people, nearly all of them between 25 and 45, in suits, in offices. For Peter, a retired farmer still driving unlit back roads after dark, the closest match was a lawyer in a three-piece suit. For a South Asian woman in her fifties there was nothing at all.</p>
-      <p class="turn">A patient who looks nothing like the patient is a prop. The surgeon stops believing in the first ten seconds, and the whole activation becomes a demo of software.</p>
-      <p>So the three patients were cast properly, through StarNow, and filmed. The releases were written for reuse on day one: indefinite term, all territories, explicit consent to synthetic reproduction, with Alcon as licensee. The durable asset is not the avatar, which is a hosted rendering that stops when a subscription stops. It is the master recordings and the releases, and Alcon holds them.</p>
+      <h2>The brief was patient first.</h2>
+      <p>Get surgeons to take a history before they choose a lens, then hand them to the IOL Manager with something to talk about.</p>
+      <p>So the patients were written to hold back. Each one opens with a greeting and nothing more. Their daily life, what they want from surgery and what they would trade away only come out when the surgeon asks for them.</p>
+      <p class="turn">A surgeon who skips the history still has to make a recommendation, and the patient tells them, politely, when it does not fit the life they have just described.</p>
     </div>
   </section>
 
   <section>
-    <div class="act"><span class="n">Act 2</span> The shoot</div>
+    <div class="act"><span class="n">Act 2</span> The patients</div>
     <div class="stack">
-      <h2>Three actors, one green cyclorama, ninety seconds each.</h2>
-      <p>Filmed at St Kilda Studios in October. Each patient needed one continuous chest-up take: about thirty seconds talking, then thirty seconds still and silent. The takes came in between 91 and 113 seconds. The same recording trains the face and clones the voice, so the voice you hear on the stand is the actor's own.</p>
-      <p>Then the footage was rejected. The platform we had chosen required a two-minute minimum, and every take fell under it.</p>
-      <p class="turn green">The studio day was not wasted footage. It was wasted on the wrong platform's minimum.</p>
-    </div>
-  </section>
-
-  <section>
-    <div class="act"><span class="n">Act 3</span> The switch</div>
-    <div class="stack">
-      <h2>Eleven days out, we changed engines.</h2>
-      <p>The replacement platform trains on one continuous minute, so every take already in hand qualified. Moving cost about a week of rework with eleven days on the clock, and bought three things the first platform could not offer.</p>
-      <div class="two">
-        <div class="stack-sm">
-          <h3>Our own guardrails</h3>
-          <p class="note">The language model became ours to choose and instruct, instead of the vendor's. That is what makes a patient who never names a lens, never diagnoses, and never advises an enforceable rule rather than a hope.</p>
-        </div>
-        <div class="stack-sm">
-          <h3>The green screen became an asset</h3>
-          <p class="note">Filmed on green, the background is replaceable at run time. Every consult was composited onto Alcon blue in the browser, on the graphics card, frame by frame. Change the brand, change one value.</p>
-        </div>
-      </div>
-      <div class="swatches" role="img" aria-label="Studio green at the shoot becomes Alcon blue on the stand screen">
-        <div class="sw g"><b>Studio green</b>what was filmed</div>
-        <div class="sw b"><b>#003595</b>what the surgeon saw</div>
-      </div>
-      <p class="note">Two consult PCs, sealed into the stand wall, each driving a 55&Prime; portrait screen. Both were reachable from Melbourne for the whole show, which is how every fix during the three days was made without opening the wall.</p>
-    </div>
-  </section>
-
-  <section>
-    <div class="act"><span class="n">Act 4</span> The patients</div>
-    <div class="stack">
-      <h2>Each one is holding three things back.</h2>
-      <p>The patients were written so the surgeon has to do the asking. Nothing is volunteered up front, there is no case card on screen, and every consult ends the same way: the patient asks what lens the surgeon would choose, so a decision has to be made out loud.</p>
+      <h2>Three real people, cast for the part.</h2>
+      <p>Peter, Margaret and Rami were cast against Alcon&rsquo;s three patient profiles and filmed in a Melbourne studio in October. The face and voice of each patient come from the actor&rsquo;s own recording, so the person on the screen looks and sounds like someone a surgeon would see in clinic.</p>
+      <p>Alcon owns the recordings of the three actors and holds the releases, written for indefinite reuse.</p>
       <div class="patients" id="patients"></div>
-      <p class="note">Clinical detail and lens mapping sit with Alcon Medical Affairs. What is shown here is the conversation design: what the patient knows, and what the surgeon has to draw out of them.</p>
+      <p class="note">Clinical details and lens mapping sit with Alcon Medical Affairs and are not shown here. Each card shows the conversation design: who the patient is, and what the surgeon has to draw out.</p>
     </div>
   </section>
 
   <section>
-    <div class="act"><span class="n">Act 5</span> In the room</div>
+    <div class="act"><span class="n">Act 3</span> The rooms</div>
     <div class="stack">
-      <h2>Nothing was recorded. That was the design, not a limitation.</h2>
+      <h2>Two private rooms, run from a phone.</h2>
+      <p>Each room had a 55&Prime; portrait screen with the patient at seated eye level, a headset with a boom mic and a chair. The IOL Manager chose the patient and started each consult from a phone, so nobody on the stand touched the equipment in the wall. Between consults the screen held a waiting-room loop.</p>
+      <p>Every patient was filmed on green and shown on Alcon blue, so the rooms carry the brand without a set build.</p>
+      <div class="swatches" role="img" aria-label="Filmed on green in the studio, shown on Alcon blue on the stand screen">
+        <div class="sw g"><b>Filmed on green</b>in the studio</div>
+        <div class="sw b"><b>Shown on Alcon blue</b>#003595</div>
+      </div>
+      <p class="note">Both rooms were monitored for the three days, and adjustments during show hours were made remotely, without opening the stand.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="act"><span class="n">Act 4</span> Nothing recorded</div>
+    <div class="stack">
+      <h2>Nothing a surgeon said was recorded.</h2>
       <div class="two">
         <div class="stack-sm">
           <h3>What the system keeps</h3>
-          <p class="note">A count, a timestamp, a duration and which patient was chosen. That is the entire record, and it is what this report is built from.</p>
+          <p class="note">The room, the patient chosen, the start time and the length of each consult. This report is built from that and nothing else.</p>
         </div>
         <div class="stack-sm">
           <h3>What it never had</h3>
-          <p class="note">No transcript, no audio, no video, no identity. Each conversation is ended and hard-deleted from the vendor at the moment the surgeon stands up, and a check runs on every start-up to catch any that a power cut might have left behind.</p>
+          <p class="note">No transcript, no audio, no video and no names. Each conversation is deleted from the platform as soon as the consult ends.</p>
         </div>
       </div>
-      <p>For a medical audience this is the thing that lets a surgeon speak freely to a stranger at a trade stand. It is also why the warm, qualitative half of this report has to come from the people who stood in the room, rather than from the system.</p>
+      <p>That matters when a surgeon is speaking to a stranger at a trade stand. It also means everything qualitative in this report comes from the people who were in the room.</p>
     </div>
   </section>
 
   <section>
-    <div class="act"><span class="n">Act 6</span> The evidence</div>
+    <div class="act"><span class="n">Act 5</span> The numbers</div>
     <div class="stack">
       <h2>Every consult on the stand, end to end.</h2>
-      <p>Each column is one conversation. The dashed line is our own time limit, which we raised from seven minutes to ten after the first day because surgeons kept hitting it.</p>
+      <p>Each column is one consult. The dashed line is the time limit: seven minutes on day one, raised to ten for days two and three because consults kept running into it.</p>
       <div class="chartbox">
         <div class="chartscroll"><svg id="chart" viewBox="0 0 900 330" role="img" aria-label="Column chart of every consult on the stand by length"></svg></div>
         <div class="readout" id="readout"></div>
@@ -341,45 +296,43 @@ footer p { font-family: var(--mono); font-size: .74rem; color: var(--muted); }
       </div>
       <div class="two">
         <div class="stack-sm">
-          <h3>Dwell time is the finding</h3>
-          <p class="note">A median of five minutes thirty-eight seconds, with a surgeon choosing to stay. Thirteen consults ran until the software stopped them, including one at ten minutes and seven seconds on the Sunday.</p>
+          <h3>What the numbers show</h3>
+          <p class="note">42 consults ran a minute or longer, with a median of five minutes 38 seconds. 13 ran until the time limit ended them, the longest at ten minutes seven seconds on the Sunday.</p>
         </div>
         <div class="stack-sm">
           <h3>What is counted</h3>
-          <p class="note">54 sessions were logged across the three show days. The 12 that ran under a minute were warm-ups and restarts between surgeons and are excluded from the median, shown here in outline. Day three was still running when this was generated.</p>
+          <p class="note">54 sessions were logged across the three days. The 12 under a minute were warm-ups and resets between surgeons. They are shown in outline and left out of the median. Day three was still running when this was generated.</p>
         </div>
       </div>
     </div>
   </section>
 
   <section>
-    <div class="act"><span class="n">Act 7</span> What they said</div>
+    <div class="act"><span class="n">Act 6</span> From the floor</div>
     <div class="stack">
-      <h2>The part the system cannot measure.</h2>
-      <p>Because nothing is recorded, the qualitative response exists only with the people who were standing beside the surgeons. These slots are for the IOL Managers who ran the rooms.</p>
+      <h2>What the people in the room saw.</h2>
+      <p>Because nothing was recorded, the response to the patients lives with the people who stood beside the surgeons: the IOL Managers who ran the rooms.</p>
       <div class="quotes">
         <div class="q"><span class="pending">To be supplied</span><div class="slot">&ldquo;&hellip;&rdquo;</div><div class="who">IOL Manager &middot; Room 1</div></div>
         <div class="q"><span class="pending">To be supplied</span><div class="slot">&ldquo;&hellip;&rdquo;</div><div class="who">IOL Manager &middot; Room 2</div></div>
         <div class="q"><span class="pending">To be supplied</span><div class="slot">&ldquo;&hellip;&rdquo;</div><div class="who">Surgeon &middot; name and hospital</div></div>
       </div>
-      <p class="note">Two themes were reported from the floor during the show and are repeated here as floor feedback rather than as findings: that the patients felt real to talk to, and that several surgeons asked whether they could use this at home to practise. Both want attributing to a named person before this goes to Alcon.</p>
+      <p class="note">Two things were said on the floor more than once and are noted here as floor feedback until they are attributed: that the patients felt real to talk to, and that several surgeons asked whether they could use them at home to practise.</p>
     </div>
   </section>
 
   <section>
-    <div class="act"><span class="n">Act 8</span> Where it goes</div>
+    <div class="act"><span class="n">Act 7</span> Next</div>
     <div class="stack">
-      <h2>The stand was the proof. The asset is the patient.</h2>
-      <p>What exists now is an engine: written patients, enforceable guardrails, three trained faces with reuse rights, and a room that ran unattended for three days. RANZCO used it as an activation. The more interesting question is what it is for the other fifty-one weeks.</p>
-      <p>Choose any combination to see what each one actually involves.</p>
-      <div class="opts" id="opts"></div>
-      <div class="summary" id="summary"></div>
+      <h2>What happens next.</h2>
+      <p>RANZCO used the patients as a stand. They will hold the same consult with anyone who sits down, and Alcon owns the recordings they are made from.</p>
+      <p>We would like to sit down with Alcon and work through where they go next: the next congress, Alcon&rsquo;s own team, or surgeons between meetings.</p>
     </div>
   </section>
 
   <footer>
     <p>Watch This Space &middot; Meet the Patient &middot; prepared for Alcon ANZ</p>
-    <p id="foot-note">Consult figures read directly from both stand PCs. Counts and durations only; no conversation content exists.</p>
+    <p id="foot-note">Consult figures read directly from both stand PCs. Counts and lengths only; no conversation content exists.</p>
   </footer>
 </div>
 
@@ -404,32 +357,13 @@ var PATIENTS = [
       "A neighbour had surgery and needs no glasses at all, and Margaret wants that."
     ]},
   { id:"rami", name:"Rami George", age:59, colour:"var(--rami)",
-    tag:"Financial planner, working full time. Eighty per cent of his day is on a screen.",
+    tag:"Financial planner, working full time, mostly on screens.",
     story:"Most of his day is in front of multiple computer screens, and he works from home one day a week on a laptop. Plays golf on the weekend, gardens, takes on projects around the house.",
     surface:[
       "About eighty per cent of his working day is on multiple computer screens.",
       "He commutes daily and often drives home late at night; confidence after dark matters.",
       "He wants reliable, natural quality of vision rather than freedom from glasses."
     ]}
-];
-
-var OPTIONS = [
-  { id:"lang", title:"More languages",
-    body:"The patients are written text and a cloned voice. Both travel. The same three people can hold the same consult in another language without being refilmed.",
-    wts:"Conversation rewrite and voice work per language, plus accent testing.",
-    client:"Clinical review of the translated content in each market." },
-  { id:"faces", title:"New patients",
-    body:"Each new patient is a casting call, a ninety-second shoot and a trained face. The written character is the slow part, not the filming.",
-    wts:"Casting, shoot day, character writing, training and testing.",
-    client:"The clinical profile each new patient is built to represent." },
-  { id:"home", title:"Take-home practice",
-    body:"Several surgeons asked for this unprompted. It is a different product from a stand: a login, a usage limit and a bill that moves with how much it is used, rather than a sealed PC in a wall.",
-    wts:"Hosting, accounts, usage controls and a per-minute supply agreement.",
-    client:"Who may access it, and how much use is funded." },
-  { id:"keep", title:"Keep it running",
-    body:"The rooms ran unattended for three days and were maintained from Melbourne. The same two rooms can go to the next congress with new patients instead of a new build.",
-    wts:"Hosting, content updates and on-site support per event.",
-    client:"A calendar of events worth attending." }
 ];
 
 function fmt(s) { return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); }
@@ -452,14 +386,14 @@ function fmt(s) { return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); 
           '<div class="lbl">The surgeon has to find</div>' +
           '<ul>' + p.surface.map(function (s) { return "<li>" + s + "</li>"; }).join("") + '</ul>' +
         '</div>' +
-        '<div class="more">Read the brief</div>' +
+        '<div class="more">Who they are</div>' +
       '</div>';
     var body = b.querySelector(".body"), more = b.querySelector(".more");
     b.onclick = function () {
       var open = b.getAttribute("aria-expanded") === "true";
       b.setAttribute("aria-expanded", open ? "false" : "true");
       body.hidden = open;
-      more.textContent = open ? "Read the brief" : "Close";
+      more.textContent = open ? "Who they are" : "Close";
     };
     host.appendChild(b);
   });
@@ -588,40 +522,6 @@ function readout(c) {
   note.style.cursor = "default";
   note.innerHTML = '<span class="dot" style="background:transparent;border:1.2px solid var(--muted)"></span>under a minute';
   host.appendChild(note);
-})();
-
-/* ---------- next steps ---------- */
-(function () {
-  var host = document.getElementById("opts"), sum = document.getElementById("summary");
-  var chosen = {};
-  function render() {
-    var picked = OPTIONS.filter(function (o) { return chosen[o.id]; });
-    if (!picked.length) {
-      sum.innerHTML = '<h3>Nothing selected</h3><p class="empty">Choose one or more above. Each is a different shape of work, not a bigger version of the same job.</p>';
-      return;
-    }
-    sum.innerHTML =
-      "<h3>" + (picked.length === 1 ? "One direction" : picked.length + " directions") + ", and what each one needs</h3>" +
-      "<ul>" + picked.map(function (o) {
-        return "<li><b>" + o.title + "</b><br>Watch This Space: " + o.wts + "<br>Alcon: " + o.client + "</li>";
-      }).join("") + "</ul>" +
-      '<p class="empty">Scope first, then the commercial conversation. Nothing here is priced on this page.</p>';
-  }
-  OPTIONS.forEach(function (o) {
-    var b = document.createElement("button");
-    b.className = "opt"; b.type = "button"; b.setAttribute("aria-pressed", "false");
-    b.innerHTML =
-      '<div class="top"><h3>' + o.title + '</h3><span class="tick" aria-hidden="true">&#10003;</span></div>' +
-      "<p>" + o.body + "</p>" +
-      '<div class="req">Needs a decision from both sides</div>';
-    b.onclick = function () {
-      chosen[o.id] = !chosen[o.id];
-      b.setAttribute("aria-pressed", chosen[o.id] ? "true" : "false");
-      render();
-    };
-    host.appendChild(b);
-  });
-  render();
 })();
 
 /* ---------- figures from the data ---------- */

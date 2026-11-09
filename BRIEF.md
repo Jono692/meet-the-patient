@@ -2866,3 +2866,56 @@ soft wind-down before the cap; the `|| state.personas[0]` fallback; demo/control
 - FOR COWORK: Claude Code built the page; the narrative copy and how this is positioned to
   Alcon is yours. The words in it are a first pass, not approved client copy. Tell Jono if
   you would rather own the whole deliverable so we do not build two.
+
+## 9 Nov 2026, afternoon NZ - Cowork - client report copy v2 and positioning
+
+- Copy v2 written: `reports/COPY-v2-cowork.md`. Claude Code keeps the file and drops the copy in.
+  Seven acts instead of eight: hero, the brief, the patients (cards kept), the rooms, nothing
+  recorded, the numbers (chart kept), from the floor, next. Cut: the St Kilda shoot and platform
+  switch acts (client report should not narrate vendor problems; both named suppliers and tech).
+  Removed: the interactive next-steps menu (reads as an upsell in a results report); Act 7 is now
+  two plain paragraphs, unpriced.
+- Fact fixes in the first pass, detailed at the bottom of the copy file: "the language model became
+  ours" (false, the booth runs the platform's model); "patient asks what lens you'd choose" (false
+  against shared_rules, patient reacts to the recommendation); release terms trimmed to the SOW
+  wording; the start-up orphan check claim cut (only true from UPDATE-8); all vendor and tech names out.
+- Positioning (Jono's call, Cowork view given): lead with the brief (patient first, history before
+  lens), with dwell time as the evidence, not dwell time as the finding.
+- New business view given: take-home practice is the real recurring product; first users Alcon's own
+  IOL Managers and reps, then surgeons via Alcon's professional education; put it to Alcon in a
+  separate conversation, not in the report. Other clients: same engine, new cast and content, no
+  Alcon faces or clinical content travel (Alcon owns the recordings).
+- STILL OPEN before this goes to Alcon: final day-three numbers; three quotes with names; named
+  attribution for the two floor themes; delete orphan conversation cc224b29157e34bf on Tavus
+  (Jono's click) so "each conversation is deleted" is true; Jono to approve the copy.
+
+## 9 Nov 2026, 1:30pm NZ — Cowork copy v2 applied to the client report
+
+Cowork delivered report copy v2 and it is now live on the same link
+(https://claude.ai/artifact/Byct8ezkKeyfRevGpv1Xaa, version 2). Structure went from eight acts
+to seven. Cut: the St Kilda shoot act and the platform switch act, on the grounds that a results
+report does not narrate our vendor problems and both acts named suppliers and technology. The
+casting point now sits inside the patients act. The interactive next-steps menu is gone, replaced
+by plain text asking for a meeting. Source is reports/report.html; the four-option configurator,
+its data and its CSS have been deleted from the file.
+
+Four facts Cowork corrected in the first pass, all now out of the page:
+- "the language model became ours to choose and instruct" — wrong, the booth runs the platform's
+  own model and we write the prompt.
+- "every consult ends with the patient asking what lens the surgeon would choose" — wrong against
+  shared_rules; the patient reacts to the recommendation and pushes back if it clashes.
+- the release terms (indefinite term, all territories, consent to synthetic reproduction, Alcon as
+  licensee) could not be checked against the SOW, so the copy now says only what the SOW says.
+- "a check runs on every start-up to catch any a power cut left behind" — only true from UPDATE-8
+  on 7 Nov evening.
+
+Blocker for sending it to Alcon: Act 4 states every conversation is deleted as soon as the consult
+ends. Orphan cc224b29157e34bf from the morning of 7 Nov is still on the Tavus account. It has to
+be deleted (Jono's click) or that line is not true.
+
+Floor at 1:27pm NZ on day 3: Room B live with Margaret, 8m27s in and heading for the 10 minute cap.
+Room A idle, nothing since the 07:55 warm-up. Show-day totals unchanged from last night: 54
+sessions, 42 of a minute or longer, median 5:38, 224 minutes, 13 capped. Final data goes in this
+afternoon once the floor closes.
+
+Still open: three quote slots are empty and marked "to be supplied" on the page.
