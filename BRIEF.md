@@ -2919,3 +2919,36 @@ sessions, 42 of a minute or longer, median 5:38, 224 minutes, 13 capped. Final d
 afternoon once the floor closes.
 
 Still open: three quote slots are empty and marked "to be supplied" on the page.
+
+## 9 Nov 2026, 2:40pm NZ — final show figures, both PCs archived before bump-out
+
+Jono is bumping out and the PCs will be off for a week, so everything the API exposes was pulled
+from both rooms and committed to reports/archive/: events, usage, budget, room, config, personas
+for A and B. That is the only copy of the event logs once the machines go off. reports/consults.json
+is regenerated from those archived logs, not from a live pull, so the report can be rebuilt with the
+stand dark.
+
+FINAL, three show days, both rooms:
+  55 sessions logged, 43 of a minute or longer
+  median 5:38, mean 5:18, longest 10:08
+  234 minutes of conversation
+  14 consults ran to the time limit
+  Sat 7 Nov  36 sessions (32 full), 153 min, 07:42 to 16:36
+  Sun 8 Nov  16 sessions (10 full),  70 min, 08:15 to 16:04
+  Mon 9 Nov   3 sessions ( 1 full),  11 min, 07:55 to 13:19
+  Peter 14 consults, median 4:35. Margaret 19, median 5:08. Rami 10, median 7:05.
+
+Day 3 added one real consult: Margaret on Room B at 1:19pm, 10:08, hit the cap. That is now the
+longest consult of the show, so the report's "longest" line moved from Sunday to Monday.
+
+The "errors" counter is misleading and should be read as capped consults. All 14 error events on
+show days are "session ended unexpectedly: left" and every one of them sits on a consult of 425-428s
+or 605-608s, i.e. exactly the 14 that hit the cap. Tavus ends the call at max_call_duration, the
+participant drops out of the room, and our app logs that as an error. Nothing failed. Worth fixing
+the label in the code before the next show so nobody reads 26 errors off /api/usage and panics.
+
+Report is on version 3 at the same link, now carrying the final data and final copy. The hero stamp
+reads "Final figures, all three days" and the "day three still running" caveat is gone.
+
+Rami is the standout on dwell time: a 7:05 median against Peter's 4:35, off only 10 consults.
+Worth a line in whatever goes to Alcon, since Rami is the working-age screen-heavy patient.

@@ -1,0 +1,1 @@
+{"provider":"tavus","chroma":true,"background":"","chromaKey":null,"similarity":0.05,"smoothness":0.025,"spill":0.06,"displayMode":"live","roomId":"B","hasPeer":true,"pinRequired":true,"rotation":["margaret","peter","rami"],"keys":{"start":"PageDown","end":"PageUp","skip":".","debounceMs":1500},"keepTranscripts":false}
