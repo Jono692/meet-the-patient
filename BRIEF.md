@@ -2973,3 +2973,42 @@ Jono ran it.
 Still open: the covering note to Caleb with the final numbers (the quote request went to him on
 10 Nov at 11:00 without it, so the dwell-time framing has not been put to him), the three quote
 slots on the report, and sharing the report link before sending it to anyone at Alcon.
+
+## 10 Nov 2026 — Stand host (Cowork): closed
+
+Booked through Sidekicker as three on-demand Event Assistant requests (1860291 Sat, 1860292 Sun,
+1860293 Mon), not one fixed-term role. Sidekicker NZ sets its own market rate per role; quoted total
+about NZ$1,040 ex GST for the three days.
+
+- Kanika Manikandan Selvi hired 30 Oct for all three days; withdrew 3 Nov (exam on Mon 9 Nov) and was
+  unhired. Sidekicker support confirmed no charge: they bill only shifts actually worked.
+- Mackenzie Judd hired 5 Nov for all three days (retired paramedic, 5 stars). Mobile +64 27 423 2561,
+  macktjudd@gmail.com. Confirmation email sent 5 Nov with times, breaks (two 15-min, one 45-min per day)
+  and Jono's mobile.
+- Mistake on our side: after hiring, nobody clicked "I've finished hiring", so the requests stayed
+  open, Sidekicker sent countdown emails, and it filled them automatically on 6 Nov. Support (Ashton)
+  confirmed the bookings were fine and nothing else was needed. Next time click "I've finished hiring"
+  straight after the hire.
+- Reopening a request after unhiring wipes the applicant list; previous applicants can't be reached
+  from the account.
+- Show days: Sat 8am to 5pm (45-min break, 8.25h, approved, NZ$406.34 incl GST); Sun 8am to 6pm;
+  Mon sent home early as the floor was dead, paid 8am to 12pm (4h). Jono approved and paid Sun and Mon
+  and rated her on 10 Nov. Timesheets must be approved by 5pm the Tuesday after, or Sidekicker charges
+  the hours as submitted.
+- Sidekicker contacts: support@sidekicker.com.au (replied within minutes), withdrawals line 1800 665 035,
+  account manager Victoria Adams (victoria.adams@sidekicker.co.nz). Jono has spoken to Victoria.
+- Cleared: all reply and applicant checks scheduled from this thread have fired or been cancelled.
+
+## 10 Nov 2026 — Guardrail testing thread ("Credit usage advice"): closed
+
+Show over and a success. Guardrail work is finished and everything is on GitHub (main).
+- Harness: tools/redteam/ (simulate + score + live Tavus driver in live/live.js); tools/tavus-sync.js pushes
+  the prompt to the PALs and reads it back. Results from 3 Nov are in ~/meet-the-patient-redteam/tools/redteam/runs/
+  (gitignored) and on the T7 in meet-the-patient/tools/redteam/runs/ and MTP-SHOW-KIT/6 Guardrail testing/.
+- The four approved shared_rules lines went live. Three later drafts were never applied (react to a named lens
+  without saying yes to it; turn things down in character without mentioning what you're "allowed" to do;
+  "not even with a number or out of ten"). Only worth doing if the activation runs again.
+- Branch guardrail-harness is fully merged into main; the worktree ~/meet-the-patient-redteam can be removed
+  once its runs/ folder is no longer wanted.
+- Rotate the Anthropic API key (it was pasted in chat and shown in a screenshot) and remove it from .env
+  if the harness won't be used again.
