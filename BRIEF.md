@@ -2952,3 +2952,24 @@ reads "Final figures, all three days" and the "day three still running" caveat i
 
 Rami is the standout on dwell time: a 7:05 median against Peter's 4:35, off only 10 consults.
 Worth a line in whatever goes to Alcon, since Rami is the working-age screen-heavy patient.
+
+## 10 Nov 2026 — Tavus conversation records cleared, report no longer blocked
+
+The orphan was not one record, it was seven: four from rehearsal on 3 Nov, two from bump-in on
+6 Nov, and cc224b29157e34bf from the morning of Sat 7 Nov, the only one created during show hours.
+All seven were status "ended" with no transcript. Jono hard-deleted all seven (hard=true) on the
+Mac on 10 Nov; verified from here afterwards, 0 conversations now on the account.
+
+That clears the blocker on the client report. Act 4 states every conversation is deleted as soon
+as the consult ends, and the account now backs that up.
+
+Verified untouched by the delete: the three trained faces, all completed on phoenix-4.5 —
+Peter rdd5ff613562, Margaret r91ae6a4ce13, Rami r9a9725c3513 — plus the 50 PALs and the preset
+face library. Those are the assets Alcon paid for.
+
+Standing rule held: irreversible Tavus deletes stay a human click. I verified, wrote the command,
+Jono ran it.
+
+Still open: the covering note to Caleb with the final numbers (the quote request went to him on
+10 Nov at 11:00 without it, so the dwell-time framing has not been put to him), the three quote
+slots on the report, and sharing the report link before sending it to anyone at Alcon.
